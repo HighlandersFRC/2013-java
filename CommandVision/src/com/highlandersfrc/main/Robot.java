@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import com.highlandersfrc.main.commands.CommandBase;
+import com.highlandersfrc.main.commands.DriveWithJoystick;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -17,9 +18,11 @@ import com.highlandersfrc.main.commands.CommandBase;
 public class Robot extends IterativeRobot {
 
     Command autoCommand;
+    Command teleCommand;
 
     public void robotInit() {
         autoCommand = new CameraFinder();
+        teleCommand = new DriveWithJoystick();
         CommandBase.init();
     }
     
@@ -33,6 +36,7 @@ public class Robot extends IterativeRobot {
     
     public void teleopInit() {
         autoCommand.cancel();
+        teleCommand.start();
     }
 
     public void teleopPeriodic() {

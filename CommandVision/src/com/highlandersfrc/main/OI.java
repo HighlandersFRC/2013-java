@@ -15,12 +15,9 @@ public class OI {
     public static final int JOYSTICK_PORT = 1;
     
     private Joystick stick;
-    private JoystickButton trigger;
     
     public OI() {
         stick = new Joystick(JOYSTICK_PORT);
-        trigger = new JoystickButton(stick,Joystick.ButtonType.kTop.value);
-        //trigger.whenPressed(new SquareDrive());
     }
     
     public Joystick getJoystick() {
