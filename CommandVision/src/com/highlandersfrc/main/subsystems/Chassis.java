@@ -25,7 +25,11 @@ public class Chassis extends Subsystem {
         drive.setLeftRightMotorOutputs(left, right);
     }
     
-    public void driveWithJoystick(Joystick stick) {
+    public void arcadeDrive(Joystick stick) {
         drive.arcadeDrive(stick);
+    }
+    
+    public void tankDrive(Joystick left, Joystick right) {
+        drive.tankDrive(left, right);
     }
 }

@@ -4,14 +4,14 @@ package com.highlandersfrc.main.commands;
  *
  * @author bradmiller
  */
-public class DriveWithJoystick extends CommandBase {
+public class ArcadeDrive extends CommandBase {
 
-    public DriveWithJoystick() {
+    public ArcadeDrive() {
         requires(chassis);
     }
 
     protected void execute() {
-        chassis.driveWithJoystick(oi.getJoystick());
+        chassis.arcadeDrive(oi.getJoystick1());
     }
 
     protected boolean isFinished() {

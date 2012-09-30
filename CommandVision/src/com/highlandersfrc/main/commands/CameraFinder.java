@@ -15,6 +15,10 @@ import edu.wpi.first.wpilibj.image.ParticleAnalysisReport;
  */
 public class CameraFinder extends CommandBase {
     
+    public static final int DEAD_ZONE = 15;
+    
+    private double percent;
+    
     CriteriaCollection cc;
     
     public CameraFinder() {
@@ -42,15 +46,25 @@ public class CameraFinder extends CommandBase {
             }
             //System.out.println(filteredImg.getNumberParticles() + "  " + Timer.getFPGATimestamp());
             if (filteredImg.getNumberParticles() >= 1) {
-                if (reports[0].center_mass_x > (img.getWidth() / 2 + 5)) {
-                    chassis.drive(-0.15, 0.15);
-                    //System.out.println("right");
-                } else if (reports[0].center_mass_x < (img.getWidth() / 2 - 5)) {
-                    chassis.drive(0.15, -0.15);
-                    //System.out.println("left");
-                } else {
-                    chassis.drive(0.0, 0.0);
+                if (percent == 0) {
+                    percent = reports[0].particleToImagePercent;
                 }
+                double offset = reports[0].center_mass_x - (img.getWidth() / 2);
+                double forwardMovement = (percent - reports[0].particleToImagePercent) / 75;
+                System.out.println(forwardMovement);
+                //System.out.println("Percent: " + reports[0].particleToImagePercent);
+                chassis.drive((-offset/400)+forwardMovement, (offset/400)+forwardMovement);
+                //System.out.println(offset/400);
+//                if (reports[0].center_mass_x > (img.getWidth() / 2 + DEAD_ZONE)) {
+//                    chassis.drive(-offset/100, offset/100);
+//                    //chassis.drive(-0.15, 0.15);
+//                } else if (reports[0].center_mass_x < (img.getWidth() / 2 - DEAD_ZONE)) {
+//                    
+//                    //chassis.drive(0.15, -0.15);
+//                } else {
+//                    chassis.drive(0.0, 0.0);
+//                }
+                
             } else {
                 chassis.drive(0.0, 0.0);
             }

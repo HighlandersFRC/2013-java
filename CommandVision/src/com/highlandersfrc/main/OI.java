@@ -12,16 +12,23 @@ import edu.wpi.first.wpilibj.buttons.JoystickButton;
  */
 public class OI {
     
-    public static final int JOYSTICK_PORT = 1;
+    public static final int JOYSTICK_PORT_1 = 1;
+    public static final int JOYSTICK_PORT_2 = 2;
     
-    private Joystick stick;
+    private Joystick stick1;
+    private Joystick stick2;
     
     public OI() {
-        stick = new Joystick(JOYSTICK_PORT);
+        stick1 = new Joystick(JOYSTICK_PORT_1);
+        stick2 = new Joystick(JOYSTICK_PORT_2);
     }
     
-    public Joystick getJoystick() {
-        return stick;
+    public Joystick getJoystick1() {
+        return stick1;
+    }
+    
+    public Joystick getJoystick2() {
+        return stick2;
     }
 }
 
