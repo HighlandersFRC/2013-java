@@ -15,11 +15,8 @@ import edu.wpi.first.wpilibj.image.ParticleAnalysisReport;
  */
 public class CameraFinder extends CommandBase {
     
-    public static final int DEAD_ZONE = 15;
-    
     private double percent;
-    
-    CriteriaCollection cc;
+    private CriteriaCollection cc;
     
     public CameraFinder() {
         requires(camera);
@@ -35,36 +32,35 @@ public class CameraFinder extends CommandBase {
     protected void execute() {
         try {
             ColorImage img = camera.getImage();
-            BinaryImage thresholdImg = img.thresholdRGB(25, 255, 0, 45, 0, 100);
+            System.out.println(img.image.address());
+            
+            
+            //frcGetPixelValue
+            //0, 59, 96
+            //349, 73, 59
+            //BinaryImage thresholdImg = img.thresholdRGB(100, 255, 0, 90, 0, 100);
+            BinaryImage thresholdImg = img.thresholdHSV(330, 360, 50, 80, 60, 90);
+            
+            //BinaryImage thresholdImg = img.thresholdRGB(220, 255, 40, 80, 80, 100);
             BinaryImage bigsImg = thresholdImg.removeSmallObjects(false, 2);
             BinaryImage convexHullImg = bigsImg.convexHull(false);
             BinaryImage filteredImg = convexHullImg.particleFilter(cc);
             ParticleAnalysisReport[] reports = filteredImg.getOrderedParticleAnalysisReports();
-            for (int i = 0; i < reports.length; i++) {                                // print results
-                ParticleAnalysisReport r = reports[i];
-                //System.out.println("Particle: " + i + ":  Center of mass x: " + r.center_mass_x + " Center of mass y: " + r.center_mass_y + " width " + r.boundingRectWidth + " height " + r.boundingRectHeight);
-            }
-            //System.out.println(filteredImg.getNumberParticles() + "  " + Timer.getFPGATimestamp());
+            //System.out.println(filteredImg.getNumberParticles() + " @ " + Timer.getFPGATimestamp());
             if (filteredImg.getNumberParticles() >= 1) {
                 if (percent == 0) {
                     percent = reports[0].particleToImagePercent;
                 }
                 double offset = reports[0].center_mass_x - (img.getWidth() / 2);
-                double forwardMovement = (percent - reports[0].particleToImagePercent) / 75;
-                System.out.println(forwardMovement);
-                //System.out.println("Percent: " + reports[0].particleToImagePercent);
-                chassis.drive((-offset/400)+forwardMovement, (offset/400)+forwardMovement);
-                //System.out.println(offset/400);
-//                if (reports[0].center_mass_x > (img.getWidth() / 2 + DEAD_ZONE)) {
-//                    chassis.drive(-offset/100, offset/100);
-//                    //chassis.drive(-0.15, 0.15);
-//                } else if (reports[0].center_mass_x < (img.getWidth() / 2 - DEAD_ZONE)) {
-//                    
-//                    //chassis.drive(0.15, -0.15);
-//                } else {
-//                    chassis.drive(0.0, 0.0);
-//                }
                 
+                System.out.println(reports[0].center_mass_x + ", " + reports[0].center_mass_y);
+                
+                //double forwardMovement = (percent - reports[0].particleToImagePercent) / -50;
+                //System.out.println(forwardMovement);
+                //System.out.println("Percent: " + reports[0].particleToImagePercent);
+                System.out.println(offset);
+                chassis.drive((-offset / 200), (offset / 200));
+                //System.out.println(offset/400);
             } else {
                 chassis.drive(0.0, 0.0);
             }
