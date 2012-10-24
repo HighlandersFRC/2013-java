@@ -1,5 +1,6 @@
 package com.highlandersfrc.main.commands;
 
+import com.sun.cldc.jna.Pointer;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.camera.AxisCameraException;
 import edu.wpi.first.wpilibj.image.BinaryImage;
@@ -32,21 +33,19 @@ public class CameraFinder extends CommandBase {
     protected void execute() {
         try {
             ColorImage img = camera.getImage();
-            System.out.println(img.image.address());
-            
             
             //frcGetPixelValue
             //0, 59, 96
             //349, 73, 59
-            //BinaryImage thresholdImg = img.thresholdRGB(100, 255, 0, 90, 0, 100);
-            BinaryImage thresholdImg = img.thresholdHSV(330, 360, 50, 80, 60, 90);
+            BinaryImage thresholdImg = img.thresholdRGB(100, 255, 30, 120, 20, 100);
+            //BinaryImage thresholdImg = img.thresholdHSV(300, 360, 30, 80, 50, 90);
             
             //BinaryImage thresholdImg = img.thresholdRGB(220, 255, 40, 80, 80, 100);
             BinaryImage bigsImg = thresholdImg.removeSmallObjects(false, 2);
             BinaryImage convexHullImg = bigsImg.convexHull(false);
             BinaryImage filteredImg = convexHullImg.particleFilter(cc);
             ParticleAnalysisReport[] reports = filteredImg.getOrderedParticleAnalysisReports();
-            //System.out.println(filteredImg.getNumberParticles() + " @ " + Timer.getFPGATimestamp());
+            System.out.println(filteredImg.getNumberParticles() + " @ " + Timer.getFPGATimestamp());
             if (filteredImg.getNumberParticles() >= 1) {
                 if (percent == 0) {
                     percent = reports[0].particleToImagePercent;
@@ -57,7 +56,7 @@ public class CameraFinder extends CommandBase {
                 
                 //double forwardMovement = (percent - reports[0].particleToImagePercent) / -50;
                 //System.out.println(forwardMovement);
-                //System.out.println("Percent: " + reports[0].particleToImagePercent);
+                System.out.println("Percent: " + reports[0].particleToImagePercent);
                 System.out.println(offset);
                 chassis.drive((-offset / 200), (offset / 200));
                 //System.out.println(offset/400);
