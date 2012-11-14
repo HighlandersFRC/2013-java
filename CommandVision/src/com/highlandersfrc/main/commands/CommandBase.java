@@ -3,6 +3,7 @@ package com.highlandersfrc.main.commands;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.highlandersfrc.main.OI;
+import com.highlandersfrc.main.subsystems.AirSystem;
 import com.highlandersfrc.main.subsystems.Camera;
 import com.highlandersfrc.main.subsystems.Chassis;
 
@@ -17,6 +18,7 @@ public abstract class CommandBase extends Command {
     public static OI oi;
     public static Chassis chassis = new Chassis();
     public static Camera camera = new Camera();
+    public static AirSystem pneumatics = new AirSystem();
     
     public CommandBase(String name) {
         super(name);

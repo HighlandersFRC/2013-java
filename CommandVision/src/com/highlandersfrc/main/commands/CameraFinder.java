@@ -37,7 +37,7 @@ public class CameraFinder extends CommandBase {
             //frcGetPixelValue
             //0, 59, 96
             //349, 73, 59
-            BinaryImage thresholdImg = img.thresholdRGB(100, 255, 30, 120, 20, 100);
+            BinaryImage thresholdImg = img.thresholdRGB(230, 255, 40, 120, 30, 100);
             //BinaryImage thresholdImg = img.thresholdHSV(300, 360, 30, 80, 50, 90);
             
             //BinaryImage thresholdImg = img.thresholdRGB(220, 255, 40, 80, 80, 100);
@@ -58,8 +58,8 @@ public class CameraFinder extends CommandBase {
                 //System.out.println(forwardMovement);
                 System.out.println("Percent: " + reports[0].particleToImagePercent);
                 System.out.println(offset);
-                chassis.drive((-offset / 200), (offset / 200));
-                //System.out.println(offset/400);
+                //chassis.drive((-offset / 200), (offset / 200));
+                System.out.println(offset/200);
             } else {
                 chassis.drive(0.0, 0.0);
             }

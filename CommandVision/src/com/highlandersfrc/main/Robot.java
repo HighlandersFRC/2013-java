@@ -20,6 +20,7 @@ public class Robot extends IterativeRobot {
 
     Command autoCommand;
     Command teleCommand;
+    Command teleArmCommand;
 
     public void robotInit() {
         autoCommand = new CameraFinder();
