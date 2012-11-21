@@ -1,15 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.highlandersfrc.main.commands;
 
 /**
  *
  * @author alex
  */
-public class armController extends CommandBase{
-    public armController() {
+public class MoveArm extends CommandBase {
+
+    public MoveArm() {
         requires(pneumatics);
     }
 
@@ -29,5 +26,4 @@ public class armController extends CommandBase{
 
     protected void interrupted() {
     }
-    
 }

@@ -1,13 +1,10 @@
 package com.highlandersfrc.main;
 
 
-import com.highlandersfrc.main.commands.CameraFinder;
+import com.highlandersfrc.main.commands.*;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
-import com.highlandersfrc.main.commands.CommandBase;
-import com.highlandersfrc.main.commands.ArcadeDrive;
-import com.highlandersfrc.main.commands.TankDrive;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -25,6 +22,7 @@ public class Robot extends IterativeRobot {
     public void robotInit() {
         autoCommand = new CameraFinder();
         teleCommand = new TankDrive();
+        teleArmCommand = new MoveArm();
         CommandBase.init();
     }
     
@@ -37,8 +35,10 @@ public class Robot extends IterativeRobot {
     }
     
     public void teleopInit() {
-        autoCommand.cancel();
+        //autoCommand.cancel();
         teleCommand.start();
+        teleArmCommand.start();
+        
     }
 
     public void teleopPeriodic() {
