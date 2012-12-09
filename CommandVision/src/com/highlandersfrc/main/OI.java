@@ -15,20 +15,20 @@ public class OI {
     public static final int JOYSTICK_PORT_1 = 1;
     public static final int JOYSTICK_PORT_2 = 2;
     
-    private Joystick stick1;
-    private Joystick stick2;
+    private Joystick joystick1;
+    private Joystick joystick2;
     
     public OI() {
-        stick1 = new Joystick(JOYSTICK_PORT_1);
-        stick2 = new Joystick(JOYSTICK_PORT_2);
+        joystick1 = new Joystick(JOYSTICK_PORT_1);
+        joystick2 = new Joystick(JOYSTICK_PORT_2);
     }
     
     public Joystick getJoystick1() {
-        return stick1;
+        return joystick1;
     }
     
     public Joystick getJoystick2() {
-        return stick2;
+        return joystick2;
     }
 }
 

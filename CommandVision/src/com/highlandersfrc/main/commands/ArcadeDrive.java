@@ -7,11 +7,11 @@ package com.highlandersfrc.main.commands;
 public class ArcadeDrive extends CommandBase {
 
     public ArcadeDrive() {
-        requires(chassis);
+        //requires(chassis);
     }
 
     protected void execute() {
-        chassis.arcadeDrive(oi.getJoystick1());
+        //chassis.arcadeDrive(oi.getJoystick1());
     }
 
     protected boolean isFinished() {

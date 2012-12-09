@@ -8,13 +8,15 @@ public class MoveArm extends CommandBase {
 
     public MoveArm() {
         requires(pneumatics);
+        //requires(chassis);
     }
 
     protected void initialize() {
     }
 
     protected void execute() {
-        pneumatics.runArm(oi.getJoystick2());
+        //chassis.drive(0, 0);
+        pneumatics.runArm(oi.getJoystick1(), oi.getJoystick2());
     }
 
     protected boolean isFinished() {

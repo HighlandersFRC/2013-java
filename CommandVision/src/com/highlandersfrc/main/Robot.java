@@ -15,30 +15,24 @@ import edu.wpi.first.wpilibj.command.Scheduler;
  */
 public class Robot extends IterativeRobot {
 
-    Command autoCommand;
-    Command teleCommand;
     Command teleArmCommand;
+    Command teleDrive;
 
     public void robotInit() {
-        autoCommand = new CameraFinder();
-        teleCommand = new TankDrive();
         teleArmCommand = new MoveArm();
+        teleDrive = new TankDrive();
         CommandBase.init();
     }
     
     public void autonomousInit() {
-        autoCommand.start();
     }
     
     public void autonomousPeriodic() {
-        Scheduler.getInstance().run();
     }
     
     public void teleopInit() {
-        //autoCommand.cancel();
-        teleCommand.start();
-        teleArmCommand.start();
-        
+        teleArmCommand.start();   
+        teleDrive.start();
     }
 
     public void teleopPeriodic() {
