@@ -1,6 +1,9 @@
 package com.highlandersfrc.main.commands;
 
+import com.sun.cldc.jna.BlockingFunction;
+import com.sun.cldc.jna.NativeLibrary;
 import com.sun.cldc.jna.Pointer;
+import com.sun.cldc.jna.TaskExecutor;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.camera.AxisCameraException;
 import edu.wpi.first.wpilibj.image.BinaryImage;
@@ -15,13 +18,18 @@ import edu.wpi.first.wpilibj.image.ParticleAnalysisReport;
  * @author David
  */
 public class CameraFinder extends CommandBase {
-    
+
     private double percent;
     private CriteriaCollection cc;
-    
+    private static final TaskExecutor taskExecutor = new TaskExecutor("camera task");
+    private static final BlockingFunction pixelFunc = NativeLibrary.getDefaultInstance().getBlockingFunction("imaqGetPixelValue");
+
+    static {
+        pixelFunc.setTaskExecutor(taskExecutor);
+    }
+
     public CameraFinder() {
-        //requires(camera);
-        //requires(chassis);
+        requires(camera);
     }
 
     protected void initialize() {
@@ -31,6 +39,17 @@ public class CameraFinder extends CommandBase {
     }
 
     protected void execute() {
+        try {
+            Pointer p = new Pointer(100);
+            
+            ColorImage img = camera.getImage();
+            pixelFunc.call3(img.image, null, null);
+        } catch (AxisCameraException ex) {
+            ex.printStackTrace();
+        } catch (NIVisionException ex) {
+            ex.printStackTrace();
+        }
+        
 //        try {
 //            ColorImage img = camera.getImage();
 //            
@@ -38,7 +57,7 @@ public class CameraFinder extends CommandBase {
 //            //0, 59, 96
 //            //349, 73, 59
 //            BinaryImage thresholdImg = img.thresholdRGB(230, 255, 40, 120, 30, 100);
-//            //BinaryImage thresholdImg = img.thresholdHSV(300, 360, 30, 80, 50, 90);
+//            BinaryImage thresholdImg = img.thresholdHSV(300, 360, 30, 80, 50, 90);
 //            
 //            //BinaryImage thresholdImg = img.thresholdRGB(220, 255, 40, 80, 80, 100);
 //            BinaryImage bigsImg = thresholdImg.removeSmallObjects(false, 2);

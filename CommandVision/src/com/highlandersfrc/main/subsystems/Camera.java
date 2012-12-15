@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.highlandersfrc.main.subsystems;
 
 import edu.wpi.first.wpilibj.camera.AxisCamera;
@@ -16,10 +12,10 @@ import edu.wpi.first.wpilibj.image.NIVisionException;
  */
 public class Camera extends Subsystem {
     
-    // Just a test edit
     AxisCamera camera;
 
     public void initDefaultCommand() {
+        //No intialization needed.
     }
     
     public Camera() {

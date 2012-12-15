@@ -17,7 +17,7 @@ public abstract class CommandBase extends Command {
 
     public static OI oi;
     public static Chassis chassis = new Chassis();
-    //public static Camera camera = new Camera();
+    public static Camera camera = new Camera();
     public static Pneumatics pneumatics = new Pneumatics();
     
     public CommandBase(String name) {
