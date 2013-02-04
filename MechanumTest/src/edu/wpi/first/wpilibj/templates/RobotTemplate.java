@@ -6,17 +6,15 @@
 /*----------------------------------------------------------------------------*/
 package edu.wpi.first.wpilibj.templates;
 
-import edu.wpi.first.wpilibj.ADXL345_I2C;
 import edu.wpi.first.wpilibj.ADXL345_I2C.*;
 import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DigitalModule;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Gyro;
-import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -44,8 +42,9 @@ public class RobotTemplate extends IterativeRobot {
     double gunnerX;
     double gunnerY;
     double heading;
-    Compressor comp = new Compressor(1,1);
-    DoubleSolenoid launch = new DoubleSolenoid(1,2);
+    Compressor comp = new Compressor(1, 1);
+    DoubleSolenoid launch = new DoubleSolenoid(1, 2);
+    Victor arm = new Victor(5);
 
     public void robotInit() {
         drive.setSafetyEnabled(false);
@@ -92,7 +91,7 @@ public class RobotTemplate extends IterativeRobot {
                 drive.mecanumDrive_Cartesian(-1, 0, 0, 0);
             }
         } else {
-            if (joy3.getRawButton(4) && !joy3.getRawButton(5)) { 
+            if (joy3.getRawButton(4) && !joy3.getRawButton(5)) {
                 gunnerX = -0.3;
             } else if (joy3.getRawButton(5) && !joy3.getRawButton(4)) {
                 gunnerX = 0.3;
@@ -105,25 +104,31 @@ public class RobotTemplate extends IterativeRobot {
                 gunnerY = -0.3;
             } else {
                 gunnerY = 0;
-            } 
-            heading += joy3.getAxis(Joystick.AxisType.kX)*SmartDashboard.getNumber("Slider 1")/20;
-            drive.mecanumDrive_Cartesian(gunnerX, gunnerY, (-gyro.getAngle()+heading)/20, 0);
+            }
+            heading += joy3.getAxis(Joystick.AxisType.kX) * SmartDashboard.getNumber("Slider 1") / 20;
+            drive.mecanumDrive_Cartesian(gunnerX, gunnerY, (-gyro.getAngle() + heading) / 20, 0);
         }
         if (joy4.getRawButton(1)) {
             if (launch.get().equals(DoubleSolenoid.Value.kReverse)) {
                 launch.set(DoubleSolenoid.Value.kForward);
                 Timer.delay(0.5);
-            }
-            else {
+            } else {
                 launch.set(DoubleSolenoid.Value.kReverse);
                 Timer.delay(0.5);
             }
-        } 
+        }
         if (joy4.getRawButton(2)) {
             comp.stop();
         }
         if (joy4.getRawButton(3)) {
             comp.start();
+        }
+        if (joy4.getRawButton(11)) {
+            arm.set(0.2);
+        } else if (joy4.getRawButton(10)) {
+            arm.set(-0.2);
+        } else {
+            arm.set(0);
         }
     }
 }
