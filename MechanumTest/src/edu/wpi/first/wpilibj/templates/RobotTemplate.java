@@ -37,7 +37,7 @@ public class RobotTemplate extends IterativeRobot {
     Joystick joy3 = new Joystick(3);
     Joystick joy4 = new Joystick(4);
     RobotDrive drive = new RobotDrive(1, 2, 4, 3);
-    ADXL345_I2C accel = new ADXL345_I2C(1, DataFormat_Range.k2G);
+//    ADXL345_I2C accel = new ADXL345_I2C(1, DataFormat_Range.k2G);
     Gyro gyro = new Gyro(1);
     boolean driver = true;
     boolean driveLock = false;
@@ -85,7 +85,6 @@ public class RobotTemplate extends IterativeRobot {
         if (driver) {
 //            System.out.println("trigger");
             if (!(joy1.getRawButton(7) || joy1.getRawButton(6))) {
-                System.out.println("drive");
                 drive.mecanumDrive_Cartesian(joy1.getX(), joy1.getY(), joy2.getX(), joy2.getRawButton(1) ? gyro.getAngle() : 0);
             } else if (joy1.getRawButton(6)) {
                 drive.mecanumDrive_Cartesian(1, 0, 0, 0);
