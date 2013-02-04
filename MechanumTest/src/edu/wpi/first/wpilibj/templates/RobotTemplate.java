@@ -93,7 +93,7 @@ public class RobotTemplate extends IterativeRobot {
                 drive.mecanumDrive_Cartesian(-1, 0, 0, 0);
             }
         } else {
-            if (joy3.getRawButton(4) && !joy3.getRawButton(5)) {
+            if (joy3.getRawButton(4) && !joy3.getRawButton(5)) { 
                 gunnerX = -0.3;
             } else if (joy3.getRawButton(5) && !joy3.getRawButton(4)) {
                 gunnerX = 0.3;
