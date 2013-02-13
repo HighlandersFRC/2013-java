@@ -1,6 +1,6 @@
 MIDlet-Name: PneumaticLauncher
 MIDlet-Version: 1.0.0
 MIDlet-Vendor: FIRST
-MIDlet-1: LauncherTest, , edu.wpi.first.wpilibj.templates.LauncherTest
+MIDlet-1: ClimberTest, , edu.wpi.first.wpilibj.templates.ClimberTest
 MicroEdition-Profile: IMP-1.0
 MicroEdition-Configuration: CLDC-1.1
