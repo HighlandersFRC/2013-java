@@ -30,7 +30,7 @@ public class LauncherTest extends IterativeRobot {
     DoubleSolenoid launch = new DoubleSolenoid(1,2);
     Joystick joy1 = new Joystick(1);
     public void robotInit() {
-        comp.start();
+//        comp.start();
     }
 
     /**
@@ -45,13 +45,14 @@ public class LauncherTest extends IterativeRobot {
      */
     public void teleopPeriodic() {
         if (joy1.getRawButton(1)) {
-            launch.set(DoubleSolenoid.Value.kForward);
-            Timer.delay(1);
-            launch.set(DoubleSolenoid.Value.kOff);
-            Timer.delay(1);
-            launch.set(DoubleSolenoid.Value.kReverse);
-            Timer.delay(1);
-            launch.set(DoubleSolenoid.Value.kOff);
+            if (launch.get().equals(DoubleSolenoid.Value.kReverse)) {
+                launch.set(DoubleSolenoid.Value.kForward);
+                Timer.delay(0.5);
+            }
+            else {
+                launch.set(DoubleSolenoid.Value.kReverse);
+                Timer.delay(0.5);
+            }
         } 
         if (joy1.getRawButton(2)) {
             comp.stop();
