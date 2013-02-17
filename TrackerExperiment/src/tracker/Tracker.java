@@ -26,7 +26,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * directory.
  */
 public class Tracker extends IterativeRobot {
-
+    
+    private static final double CAMERA_VIEW_ANGLE = 47.0 / 180.0 * Math.PI;
+    private static final double PIXEL_ANGLE_VERTICAL = CAMERA_VIEW_ANGLE * 2.0 / 480.0;
     AxisCamera cam = AxisCamera.getInstance();
     private CriteriaCollection cc;
 
@@ -74,18 +76,20 @@ public class Tracker extends IterativeRobot {
                 double offset = reports[0].center_mass_x - (img.getWidth() / 2);
                 SmartDashboard.putNumber("Center of mass x", (reports[0].center_mass_x_normalized + 1) * 50);
                 SmartDashboard.putNumber("Center of mass y", (reports[0].center_mass_y_normalized + 1) * 50);
-                System.out.println(reports[0].center_mass_x + ", " + reports[0].center_mass_y);
-                double tanTheta = Math.tan(-reports[0].boundingRectTop * 0.0025452718 + reports[0].boundingRectHeight * 0.0025452718 + 0.6108652382);
-                double tanPhi = Math.tan(-reports[0].boundingRectTop * 0.0025452718 + 0.6108652382);
+                //System.out.println(reports[0].center_mass_x + ", " + reports[0].center_mass_y);
+                int pixelsUpper = 240 - reports[0].boundingRectTop;
+                int pixelsLower = 240 - (reports[0].boundingRectTop - reports[0].boundingRectHeight);
+                double tanTheta = Math.tan(pixelsLower*PIXEL_ANGLE_VERTICAL);
+                double tanPhi = Math.tan(pixelsUpper*PIXEL_ANGLE_VERTICAL);
                 SmartDashboard.putNumber("Distance", -32 / (tanPhi - tanTheta));
                 SmartDashboard.putNumber("Height", -(16 * tanTheta + 16 * tanPhi) / (tanTheta - tanPhi));
                 //double forwardMovement = (percent - reports[0].particleToImagePercent) / -50;
                 //System.out.println(forwardMovement);
                 SmartDashboard.putNumber("ParticleToImagePercent", reports[0].particleToImagePercent);
-                System.out.println("Percent: " + reports[0].particleToImagePercent);
-                System.out.println(offset);
+                //System.out.println("Percent: " + reports[0].particleToImagePercent);
+                //System.out.println(offset);
                 //chassis.drive((-offset / 200), (offset / 200));
-                System.out.println(offset / 200);
+                //System.out.println(offset / 200);
             } else {
 //                chassis.drive(0.0, 0.0);
             }
