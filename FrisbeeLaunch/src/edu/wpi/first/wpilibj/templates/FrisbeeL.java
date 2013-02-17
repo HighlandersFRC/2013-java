@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -37,6 +36,8 @@ public class FrisbeeL extends IterativeRobot {
     LatchedBoolean hoppercontrol = new LatchedBoolean();
 
     public void robotInit() {
+        SmartDashboard.putNumber("Launch Power", 0);
+        SmartDashboard.putNumber("Injector Power", 0);
     }
 
     /**
