@@ -29,9 +29,10 @@ public class FrisbeeL extends IterativeRobot {
      */
     Joystick joy1 = new Joystick(1);
     Joystick joy2 = new Joystick(2);
-    Victor wheel5 = new Victor(5);
+    Victor launch = new Victor(5);
+    Victor injector = new Victor(6);
     Compressor comp = new Compressor(1, 1);
-    DoubleSolenoid launch = new DoubleSolenoid(1, 2);
+    DoubleSolenoid feed = new DoubleSolenoid(1, 2);
     boolean wheel = false;
     LatchedBoolean hoppercontrol = new LatchedBoolean();
 
@@ -54,7 +55,11 @@ public class FrisbeeL extends IterativeRobot {
             wheel = false;
         }
         if (wheel == true) {
-            wheel5.set(SmartDashboard.getNumber("Slider 1") / 100);
+            launch.set(SmartDashboard.getNumber("Launch power") / 100);
+            injector.set(SmartDashboard.getNumber("Injector Power")/100);
+        } else {
+            launch.set(0);
+            injector.set(0);
         }
 
 
@@ -67,10 +72,10 @@ public class FrisbeeL extends IterativeRobot {
         }
         hoppercontrol.set(joy2.getRawButton(1));
         if (hoppercontrol.getValue()) {
-            launch.set(DoubleSolenoid.Value.kForward);
+            feed.set(DoubleSolenoid.Value.kForward);
         }
         else {
-            launch.set(DoubleSolenoid.Value.kReverse);
+            feed.set(DoubleSolenoid.Value.kReverse);
         }
     }
 
