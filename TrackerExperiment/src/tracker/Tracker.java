@@ -58,7 +58,7 @@ public class Tracker extends IterativeRobot {
             //frcGetPixelValue
             //0, 59, 96
             //349, 73, 59
-            BinaryImage thresholdImg = img.thresholdRGB(230, 255, 230, 255, 230, 255);
+            BinaryImage thresholdImg = img.thresholdRGB(127, 255, 230, 255, 230, 255);
 //            BinaryImage thresholdImg = img.thresholdHSV(300, 360, 30, 80, 50, 90);
 
             //BinaryImage thresholdImg = img.thresholdRGB(220, 255, 40, 80, 80, 100);
@@ -79,6 +79,8 @@ public class Tracker extends IterativeRobot {
                 double tanPhi = Math.tan(-reports[0].boundingRectTop * 0.0025452718 + 0.6108652382);
                 SmartDashboard.putNumber("Distance", -32 / (tanPhi - tanTheta));
                 SmartDashboard.putNumber("Height", -(16 * tanTheta + 16 * tanPhi) / (tanTheta - tanPhi));
+                SmartDashboard.putNumber("Phi", -reports[0].boundingRectTop * 0.0025452718 + 0.6108652382);
+                SmartDashboard.putNumber("Theta", -reports[0].boundingRectTop * 0.0025452718 + reports[0].boundingRectHeight * 0.0025452718 + 0.6108652382);
                 //double forwardMovement = (percent - reports[0].particleToImagePercent) / -50;
                 //System.out.println(forwardMovement);
                 SmartDashboard.putNumber("ParticleToImagePercent", reports[0].particleToImagePercent);
