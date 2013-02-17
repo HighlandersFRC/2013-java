@@ -105,18 +105,21 @@ public class FrisbeeL extends IterativeRobot {
             comp.start();
         }
         if (joy1.getRawButton(1) && !fireControl) {
+            System.out.println("fireStart");
             injPulsePwr = SmartDashboard.getNumber("Injector Pulse Power")/100;
             launchPulsePwr = SmartDashboard.getNumber("Launcher Pulse Power")/100;
             injPulseLen = SmartDashboard.getNumber("Injector Pulse Length");
             launchPulseLen = SmartDashboard.getNumber("Launcher Pulse Length");
             injPulseDel = SmartDashboard.getNumber("Injector Pulse Delay");
             launchPulseDel = SmartDashboard.getNumber("Launcher Pulse Delay");
+            feedTime = SmartDashboard.getNumber("Piston Extension Time");
             feed.set(DoubleSolenoid.Value.kForward);
             fireControl = true;
             fireState = 0;
             startTime = Timer.getFPGATimestamp();
         }
         if (fireControl) {
+            System.out.println("firing");
             double currTime = Timer.getFPGATimestamp();
             double fireTime = currTime - startTime;
             if (fireTime >= injPulseDel && fireTime < injPulseDel + injPulseLen) {
