@@ -62,6 +62,10 @@ public class Tracker extends IterativeRobot {
                 double theta = MathUtils.atan(rectLower / FOCAL_LENGTH);
                 SmartDashboard.putNumber("Phi: ", phi / Math.PI * 180.0);
                 SmartDashboard.putNumber("Theta: ", theta / Math.PI * 180.0);
+                double tanTheta = Math.tan(theta);
+                double tanPhi = Math.tan(phi);
+                SmartDashboard.putNumber("Distance", -32 / (tanPhi - tanTheta));
+                SmartDashboard.putNumber("Height", -(16 * tanTheta + 16 * tanPhi) / (tanTheta - tanPhi));
                 //chassis.drive((-offset / 200), (offset / 200));
             }
             filteredImg.free();
