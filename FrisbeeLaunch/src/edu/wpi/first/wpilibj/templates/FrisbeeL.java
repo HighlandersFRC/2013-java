@@ -47,6 +47,7 @@ public class FrisbeeL extends IterativeRobot {
     double launchPulseDel;
     double feedTime;
     double startTime;
+    boolean defaultPistonState;
 
     public void robotInit() {
         SmartDashboard.putNumber("Launch Power", 60);
@@ -58,6 +59,7 @@ public class FrisbeeL extends IterativeRobot {
         SmartDashboard.putNumber("Injector Pulse Length", 0.25);
         SmartDashboard.putNumber("Launcher Pulse Length", 0.25);
         SmartDashboard.putNumber("Piston Extension Time", 0.75);
+        SmartDashboard.putBoolean("Piston Default Extended", false);
     }
 
     /**
@@ -113,15 +115,19 @@ public class FrisbeeL extends IterativeRobot {
             injPulseDel = SmartDashboard.getNumber("Injector Pulse Delay");
             launchPulseDel = SmartDashboard.getNumber("Launcher Pulse Delay");
             feedTime = SmartDashboard.getNumber("Piston Extension Time");
-            feed.set(DoubleSolenoid.Value.kForward);
+            defaultPistonState = SmartDashboard.getBoolean("Piston Default State");
+            feed.set(DoubleSolenoid.Value.kReverse);
             fireControl = true;
             fireState = 0;
-            startTime = Timer.getFPGATimestamp();
+            startTime = Timer.getFPGATimestamp()+(defaultPistonState?feedTime:0);
         }
         if (fireControl) {
             System.out.println("firing");
             double currTime = Timer.getFPGATimestamp();
             double fireTime = currTime - startTime;
+            if (fireTime >= 0) {
+                feed.set(DoubleSolenoid.Value.kForward);
+            }
             if (fireTime >= injPulseDel && fireTime < injPulseDel + injPulseLen) {
                 injector.set(injPulsePwr);
             }
@@ -135,7 +141,7 @@ public class FrisbeeL extends IterativeRobot {
                 launch.set(launchPwr);
             }
             if (fireTime >= feedTime) {
-                    feed.set(DoubleSolenoid.Value.kReverse);
+                    feed.set(defaultPistonState?DoubleSolenoid.Value.kOff:DoubleSolenoid.Value.kReverse);
             }
             if (fireTime >= Math.max(Math.max(injPulseDel + injPulseLen, launchPulseDel + launchPulseLen),feedTime+0.1)) {
                 if (!joy1.getRawButton(1)) {
