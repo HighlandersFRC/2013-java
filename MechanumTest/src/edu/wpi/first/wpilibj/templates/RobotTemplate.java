@@ -45,6 +45,7 @@ public class RobotTemplate extends IterativeRobot {
     Compressor comp = new Compressor(1, 1);
     DoubleSolenoid launch = new DoubleSolenoid(1, 2);
     Victor arm = new Victor(5);
+    Victor arm2 = new Victor(6);
 
     public void robotInit() {
         drive.setSafetyEnabled(false);
@@ -90,7 +91,7 @@ public class RobotTemplate extends IterativeRobot {
             } else if (joy1.getRawButton(7)) {
                 drive.mecanumDrive_Cartesian(-1, 0, 0, 0);
             }
-        } else {
+        } else { 
             if (joy3.getRawButton(4) && !joy3.getRawButton(5)) {
                 gunnerX = -0.3;
             } else if (joy3.getRawButton(5) && !joy3.getRawButton(4)) {
@@ -107,7 +108,7 @@ public class RobotTemplate extends IterativeRobot {
             }
             heading += joy3.getAxis(Joystick.AxisType.kX) * SmartDashboard.getNumber("Slider 1") / 20;
             drive.mecanumDrive_Cartesian(gunnerX, gunnerY, (-gyro.getAngle() + heading) / 20, 0);
-        }
+        } 
         if (joy4.getRawButton(1)) {
             if (launch.get().equals(DoubleSolenoid.Value.kReverse)) {
                 launch.set(DoubleSolenoid.Value.kForward);
@@ -116,7 +117,7 @@ public class RobotTemplate extends IterativeRobot {
                 launch.set(DoubleSolenoid.Value.kReverse);
                 Timer.delay(0.5);
             }
-        }
+        } 
         if (joy4.getRawButton(2)) {
             comp.stop();
         }
@@ -124,11 +125,25 @@ public class RobotTemplate extends IterativeRobot {
             comp.start();
         }
         if (joy4.getRawButton(11)) {
-            arm.set(0.2);
+            arm.set(SmartDashboard.getNumber("Slider 1")/100);
+//            arm2.set(arm.get());
         } else if (joy4.getRawButton(10)) {
-            arm.set(-0.2);
+            arm.set(-SmartDashboard.getNumber("Slider 1")/100);
+//            arm2.set(arm.get());
         } else {
             arm.set(0);
+//            arm2.set(0);
         }
+        if (joy4.getRawButton(6)) {
+//            arm.set(SmartDashboard.getNumber("Slider 1")/100);
+            arm2.set(SmartDashboard.getNumber("Slider 1")/100);
+        } else if (joy4.getRawButton(7)) {
+//            arm.set(-SmartDashboard.getNumber("Slider 1")/100);
+            arm2.set(-SmartDashboard.getNumber("Slider 1")/100);
+        } else {
+//            arm.set(0);
+            arm2.set(0);
+        }
+        System.out.println(joy4.getThrottle());
     }
-}
+} 
