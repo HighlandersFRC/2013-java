@@ -4,10 +4,7 @@
  */
 package edu.wpi.first.wpilibj.templates;
 
-/**
- *
- * @author GLaDOS
- */
+
 public class LatchedBoolean {
 
     boolean value;
