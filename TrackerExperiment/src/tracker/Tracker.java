@@ -1,11 +1,6 @@
-/*----------------------------------------------------------------------------*/
-/* Copyright (c) FIRST 2008. All Rights Reserved.                             */
-/* Open Source Software - may be modified and shared by FRC teams. The code   */
-/* must be accompanied by the FIRST BSD license file in the root directory of */
-/* the project.                                                               */
-/*----------------------------------------------------------------------------*/
 package tracker;
 
+import com.sun.squawk.util.MathUtils;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.camera.AxisCamera;
@@ -26,10 +21,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * directory.
  */
 public class Tracker extends IterativeRobot {
-    
-    private static final double CAMERA_VIEW_ANGLE = 47.0 / 180.0 * Math.PI;
-    private static final double PIXEL_ANGLE_VERTICAL = CAMERA_VIEW_ANGLE * 2.0 / 480.0;
-    AxisCamera cam = AxisCamera.getInstance();
+
+    private static final double FOCAL_LENGTH = 240.0 / Math.tan(47.0 / 180.0 * Math.PI);
+    private AxisCamera camera = AxisCamera.getInstance();
     private CriteriaCollection cc;
 
     /**
@@ -40,8 +34,6 @@ public class Tracker extends IterativeRobot {
         cc = new CriteriaCollection();
         cc.addCriteria(NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_WIDTH, 30, 400, false);
         cc.addCriteria(NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_HEIGHT, 40, 400, false);
-        SmartDashboard.putNumber("top", 0);
-        SmartDashboard.putNumber("bottom", 0);
     }
 
     /**
@@ -55,45 +47,22 @@ public class Tracker extends IterativeRobot {
      */
     public void teleopPeriodic() {
         try {
-            ColorImage img = cam.getImage();
-
-            //frcGetPixelValue
-            //0, 59, 96
-            //349, 73, 59
-            BinaryImage thresholdImg = img.thresholdRGB(127, 255, 230, 255, 230, 255);
-//            BinaryImage thresholdImg = img.thresholdHSV(300, 360, 30, 80, 50, 90);
-
-            //BinaryImage thresholdImg = img.thresholdRGB(220, 255, 40, 80, 80, 100);
+            ColorImage img = camera.getImage();
+            BinaryImage thresholdImg = img.thresholdRGB(0, 100, 230, 255, 230, 255);
             BinaryImage bigsImg = thresholdImg.removeSmallObjects(false, 2);
             BinaryImage convexHullImg = bigsImg.convexHull(false);
             BinaryImage filteredImg = convexHullImg.particleFilter(cc);
             ParticleAnalysisReport[] reports = filteredImg.getOrderedParticleAnalysisReports();
-            System.out.println(filteredImg.getNumberParticles() + " @ " + Timer.getFPGATimestamp());
             if (filteredImg.getNumberParticles() >= 1) {
-//                if (percent == 0) {
-//                    percent = reports[0].particleToImagePercent;
-//                }
-                double offset = reports[0].center_mass_x - (img.getWidth() / 2);
-                SmartDashboard.putNumber("Center of mass x", (reports[0].center_mass_x_normalized + 1) * 50);
-                SmartDashboard.putNumber("Center of mass y", (reports[0].center_mass_y_normalized + 1) * 50);
-                //System.out.println(reports[0].center_mass_x + ", " + reports[0].center_mass_y);
-                int pixelsUpper = 240 - reports[0].boundingRectTop;
-                int pixelsLower = 240 - (reports[0].boundingRectTop - reports[0].boundingRectHeight);
-                double tanTheta = Math.tan(pixelsLower*PIXEL_ANGLE_VERTICAL);
-                double tanPhi = Math.tan(pixelsUpper*PIXEL_ANGLE_VERTICAL);
-                SmartDashboard.putNumber("Distance", -32 / (tanPhi - tanTheta));
-                SmartDashboard.putNumber("Height", -(16 * tanTheta + 16 * tanPhi) / (tanTheta - tanPhi));
-                SmartDashboard.putNumber("Phi", -reports[0].boundingRectTop * 0.0025452718 + 0.6108652382);
-                SmartDashboard.putNumber("Theta", -reports[0].boundingRectTop * 0.0025452718 + reports[0].boundingRectHeight * 0.0025452718 + 0.6108652382);
-                //double forwardMovement = (percent - reports[0].particleToImagePercent) / -50;
-                //System.out.println(forwardMovement);
-                SmartDashboard.putNumber("ParticleToImagePercent", reports[0].particleToImagePercent);
-                //System.out.println("Percent: " + reports[0].particleToImagePercent);
-                //System.out.println(offset);
+                ParticleAnalysisReport report = reports[0];
+                //double offset = reports[0].center_mass_x - (img.getWidth() / 2);
+                int rectUpper = 240 - report.boundingRectTop;
+                int rectLower = 240 - (report.boundingRectTop - report.boundingRectHeight);
+                double phi = MathUtils.atan(rectUpper / FOCAL_LENGTH);
+                double theta = MathUtils.atan(rectLower / FOCAL_LENGTH);
+                SmartDashboard.putNumber("Phi: ", phi / Math.PI * 180.0);
+                SmartDashboard.putNumber("Theta: ", theta / Math.PI * 180.0);
                 //chassis.drive((-offset / 200), (offset / 200));
-                //System.out.println(offset / 200);
-            } else {
-//                chassis.drive(0.0, 0.0);
             }
             filteredImg.free();
             convexHullImg.free();
@@ -105,12 +74,6 @@ public class Tracker extends IterativeRobot {
             ex.printStackTrace();
         } catch (NIVisionException ex) {
             ex.printStackTrace();
-        }
-        if (SmartDashboard.getBoolean("Checkbox 1")) {
-            double tanTheta = Math.tan(-SmartDashboard.getNumber("bottom") * 0.0025452718 + 0.6108652382);
-            double tanPhi = Math.tan(-SmartDashboard.getNumber("top") * 0.0025452718 + 0.6108652382);
-            SmartDashboard.putNumber("Distance", -32 / (tanPhi - tanTheta));
-            SmartDashboard.putNumber("Height", -(16 * tanTheta + 16 * tanPhi) / (tanTheta - tanPhi));
         }
     }
 
