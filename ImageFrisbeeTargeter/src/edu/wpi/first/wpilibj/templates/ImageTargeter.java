@@ -4,9 +4,7 @@
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
-
 package edu.wpi.first.wpilibj.templates;
-
 
 import com.sun.squawk.util.Arrays;
 import com.sun.squawk.util.MathUtils;
@@ -34,6 +32,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * directory.
  */
 public class ImageTargeter extends IterativeRobot {
+
     private AxisCamera camera = AxisCamera.getInstance();
     private CriteriaCollection cc;
     Joystick joy1 = new Joystick(1);
@@ -57,7 +56,7 @@ public class ImageTargeter extends IterativeRobot {
     double feedTime;
     double startTime;
     boolean defaultPistonState;
-    int[] dropFactors = {0,100};
+    int[] dropFactors = {0, 100};
     double[] partPercents = {100, 10};
 
     public void robotInit() {
@@ -93,7 +92,7 @@ public class ImageTargeter extends IterativeRobot {
             injPwr = -SmartDashboard.getNumber("Injector Power") / 100;
             if (joy1.getRawButton(7)) {
                 feed.set(DoubleSolenoid.Value.kReverse);
-            } else if(joy1.getRawButton(6)) {
+            } else if (joy1.getRawButton(6)) {
                 feed.set(DoubleSolenoid.Value.kForward);
             } else {
                 feed.set(DoubleSolenoid.Value.kOff);
@@ -122,8 +121,8 @@ public class ImageTargeter extends IterativeRobot {
         }
         if (joy1.getRawButton(1) && !fireControl) {
             System.out.println("fireStart");
-            injPulsePwr = -SmartDashboard.getNumber("Injector Pulse Power")/100;
-            launchPulsePwr = -SmartDashboard.getNumber("Launcher Pulse Power")/100;
+            injPulsePwr = -SmartDashboard.getNumber("Injector Pulse Power") / 100;
+            launchPulsePwr = -SmartDashboard.getNumber("Launcher Pulse Power") / 100;
             injPulseLen = SmartDashboard.getNumber("Injector Pulse Length");
             launchPulseLen = SmartDashboard.getNumber("Launcher Pulse Length");
             injPulseDel = SmartDashboard.getNumber("Injector Pulse Delay");
@@ -133,7 +132,7 @@ public class ImageTargeter extends IterativeRobot {
             feed.set(DoubleSolenoid.Value.kReverse);
             fireControl = true;
             fireState = 0;
-            startTime = Timer.getFPGATimestamp()+(defaultPistonState?feedTime:0);
+            startTime = Timer.getFPGATimestamp() + (defaultPistonState ? feedTime : 0);
         }
         if (fireControl) {
             System.out.println("firing");
@@ -155,61 +154,62 @@ public class ImageTargeter extends IterativeRobot {
                 launch.set(launchPwr);
             }
             if (fireTime >= feedTime) {
-                    feed.set(defaultPistonState?DoubleSolenoid.Value.kOff:DoubleSolenoid.Value.kReverse);
+                feed.set(defaultPistonState ? DoubleSolenoid.Value.kOff : DoubleSolenoid.Value.kReverse);
             }
-            if (fireTime >= Math.max(Math.max(injPulseDel + injPulseLen, launchPulseDel + launchPulseLen),feedTime+0.1)) {
+            if (fireTime >= Math.max(Math.max(injPulseDel + injPulseLen, launchPulseDel + launchPulseLen), feedTime + 0.1)) {
                 if (!joy1.getRawButton(1)) {
                     fireControl = false;
                     feed.set(DoubleSolenoid.Value.kOff);
                 }
             }
         }
-        try {
-            ColorImage img = camera.getImage();
-            BinaryImage thresholdImg = img.thresholdRGB(0, 100, 230, 255, 230, 255);
-            BinaryImage bigsImg = thresholdImg.removeSmallObjects(false, 2);
-            BinaryImage convexHullImg = bigsImg.convexHull(false);
-            BinaryImage filteredImg = convexHullImg.particleFilter(cc);
-            ParticleAnalysisReport[] reports = filteredImg.getOrderedParticleAnalysisReports();
-            if (filteredImg.getNumberParticles() >= 1) {
-                ParticleAnalysisReport report = reports[0];
-                //double offset = reports[0].center_mass_x - (img.getWidth() / 2);
-                int loc = Arrays.binarySearch(partPercents, report.particleToImagePercent);
-                int dropFactor = 0;
-                if (loc > 0) {
-                    dropFactor = dropFactors[loc];
-                } else if (loc == -1) {
-                    dropFactor = lInterp(report.particleToImagePercent,partPercents[0],dropFactors[0],partPercents[1],dropFactors[1]);
-                } else if (loc == (-dropFactors.length - 1)) {
-                    dropFactor = lInterp(report.particleToImagePercent,partPercents[partPercents.length - 2],dropFactors[dropFactors.length - 2],partPercents[partPercents.length - 2],dropFactors[dropFactors.length - 2]);
-                } else {
-                    dropFactor = lInterp(report.particleToImagePercent, partPercents[-(loc+1)],dropFactors[-(loc+1)],partPercents[-(loc+2)],dropFactors[-(loc+2)]);
+        if (!fireControl) {
+            try {
+                ColorImage img = camera.getImage();
+                BinaryImage thresholdImg = img.thresholdRGB(0, 100, 230, 255, 230, 255);
+                BinaryImage bigsImg = thresholdImg.removeSmallObjects(false, 2);
+                BinaryImage convexHullImg = bigsImg.convexHull(false);
+                BinaryImage filteredImg = convexHullImg.particleFilter(cc);
+                ParticleAnalysisReport[] reports = filteredImg.getOrderedParticleAnalysisReports();
+                if (filteredImg.getNumberParticles() >= 1) {
+                    ParticleAnalysisReport report = reports[0];
+                    //double offset = reports[0].center_mass_x - (img.getWidth() / 2);
+                    int loc = Arrays.binarySearch(partPercents, report.particleToImagePercent);
+                    int dropFactor = 0;
+                    if (loc > 0) {
+                        dropFactor = dropFactors[loc];
+                    } else if (loc == -1) {
+                        dropFactor = lInterp(report.particleToImagePercent, partPercents[0], dropFactors[0], partPercents[1], dropFactors[1]);
+                    } else if (loc == (-dropFactors.length - 1)) {
+                        dropFactor = lInterp(report.particleToImagePercent, partPercents[partPercents.length - 2], dropFactors[dropFactors.length - 2], partPercents[partPercents.length - 2], dropFactors[dropFactors.length - 2]);
+                    } else {
+                        dropFactor = lInterp(report.particleToImagePercent, partPercents[-(loc + 1)], dropFactors[-(loc + 1)], partPercents[-(loc + 2)], dropFactors[-(loc + 2)]);
+                    }
+                    SmartDashboard.putNumber("required Adjustment", dropFactor - report.boundingRectTop);
+                    int rectUpper = 240 - report.boundingRectTop;
+                    int rectLower = 240 - (report.boundingRectTop - report.boundingRectHeight);
                 }
-                SmartDashboard.putNumber("required Adjustment", dropFactor-report.boundingRectTop);
-                int rectUpper = 240 - report.boundingRectTop;
-                int rectLower = 240 - (report.boundingRectTop - report.boundingRectHeight);
+                filteredImg.free();
+                convexHullImg.free();
+                bigsImg.free();
+                thresholdImg.free();
+                img.free();
+                Timer.delay(0.05);
+            } catch (AxisCameraException ex) {
+                ex.printStackTrace();
+            } catch (NIVisionException ex) {
+                ex.printStackTrace();
             }
-            filteredImg.free();
-            convexHullImg.free();
-            bigsImg.free();
-            thresholdImg.free();
-            img.free();
-            Timer.delay(0.05);
-        } catch (AxisCameraException ex) {
-            ex.printStackTrace();
-        } catch (NIVisionException ex) {
-            ex.printStackTrace();
         }
     }
-    
+
     /**
      * This function is called periodically during test mode
      */
     public void testPeriodic() {
-    
     }
+
     private int lInterp(double x, double x0, int y0, double x1, int y1) {
-        return (int)MathUtils.round((x-x0)*(((double)(y0-y1))/(x0-x1))+y0);
+        return (int) MathUtils.round((x - x0) * (((double) (y0 - y1)) / (x0 - x1)) + y0);
     }
-    
 }
