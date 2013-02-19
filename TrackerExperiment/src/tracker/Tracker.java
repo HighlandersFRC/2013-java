@@ -1,6 +1,7 @@
 package tracker;
 
 import com.sun.squawk.util.MathUtils;
+import edu.wpi.first.wpilibj.Gyro;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.camera.AxisCamera;
@@ -22,9 +23,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Tracker extends IterativeRobot {
 
-    private static final double FOCAL_LENGTH = 240.0 / Math.tan(47.0 / 180.0 * Math.PI);
+    private static final double FOCAL_LENGTH = 240.0 / Math.tan((47.0 / 2.0) / 180.0 * Math.PI);
+    private static final double CAMERA_ANGLE = 15.0;
     private AxisCamera camera = AxisCamera.getInstance();
     private CriteriaCollection cc;
+    private Gyro g = new Gyro(2);
 
     /**
      * This function is run when the robot is first started up and should be
@@ -34,6 +37,12 @@ public class Tracker extends IterativeRobot {
         cc = new CriteriaCollection();
         cc.addCriteria(NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_WIDTH, 30, 400, false);
         cc.addCriteria(NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_HEIGHT, 40, 400, false);
+        SmartDashboard.putNumber("Red Min: ", 0);
+        SmartDashboard.putNumber("Red Max: ", 100);
+        SmartDashboard.putNumber("Green Min: ", 230);
+        SmartDashboard.putNumber("Green Max: ", 255);
+        SmartDashboard.putNumber("Blue Min: ", 100);
+        SmartDashboard.putNumber("Blue Max: ", 255);
     }
 
     /**
@@ -47,22 +56,30 @@ public class Tracker extends IterativeRobot {
      */
     public void teleopPeriodic() {
         try {
+            int rMin = (int) SmartDashboard.getNumber("Red Min: ", 0);
+            int rMax = (int) SmartDashboard.getNumber("Red Max: ", 100);
+            int gMin = (int) SmartDashboard.getNumber("Green Min: ", 230);
+            int gMax = (int) SmartDashboard.getNumber("Green Max: ", 255);
+            int bMin = (int) SmartDashboard.getNumber("Blue Min: ", 100);
+            int bMax = (int) SmartDashboard.getNumber("Blue Max: ", 255);
             ColorImage img = camera.getImage();
-            BinaryImage thresholdImg = img.thresholdRGB(0, 100, 230, 255, 230, 255);
+            BinaryImage thresholdImg = img.thresholdRGB(rMin, rMax, gMin, gMax, bMin, bMax);
             BinaryImage bigsImg = thresholdImg.removeSmallObjects(false, 2);
             BinaryImage convexHullImg = bigsImg.convexHull(false);
             BinaryImage filteredImg = convexHullImg.particleFilter(cc);
             ParticleAnalysisReport[] reports = filteredImg.getOrderedParticleAnalysisReports();
             if (filteredImg.getNumberParticles() >= 1) {
                 ParticleAnalysisReport report = reports[0];
-                //double offset = reports[0].center_mass_x - (img.getWidth() / 2);
                 int rectUpper = 240 - report.boundingRectTop;
-                int rectLower = 240 - (report.boundingRectTop - report.boundingRectHeight);
+                int rectLower = 240 - (report.boundingRectTop + report.boundingRectHeight);
                 double phi = MathUtils.atan(rectUpper / FOCAL_LENGTH);
                 double theta = MathUtils.atan(rectLower / FOCAL_LENGTH);
+                SmartDashboard.putNumber("Rect Upper: ", rectUpper);
+                SmartDashboard.putNumber("Rect Lower: ", rectLower);
                 SmartDashboard.putNumber("Phi: ", phi / Math.PI * 180.0);
                 SmartDashboard.putNumber("Theta: ", theta / Math.PI * 180.0);
-                //chassis.drive((-offset / 200), (offset / 200));
+            } else {
+                System.out.println("No particles.");
             }
             filteredImg.free();
             convexHullImg.free();
@@ -75,6 +92,7 @@ public class Tracker extends IterativeRobot {
         } catch (NIVisionException ex) {
             ex.printStackTrace();
         }
+        SmartDashboard.putNumber("Angle: ", g.getAngle());
     }
 
     /**
