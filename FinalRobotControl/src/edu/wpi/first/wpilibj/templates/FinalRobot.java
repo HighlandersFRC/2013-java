@@ -6,8 +6,10 @@
 /*----------------------------------------------------------------------------*/
 package edu.wpi.first.wpilibj.templates;
 
+import com.sun.squawk.util.MathUtils;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Gyro;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
@@ -72,8 +74,13 @@ public class FinalRobot extends IterativeRobot {
         SmartDashboard.putNumber("Launcher Pulse Length", 0.25);
         SmartDashboard.putNumber("Piston Extension Time", 0.75);
         SmartDashboard.putBoolean("Piston Default Extended", false);
-        SmartDashboard.putNumber("Shoulder Power", 50);
-        SmartDashboard.putNumber("Belt Power", 85);
+        SmartDashboard.putNumber("Shoulder Power", 100);
+        SmartDashboard.putNumber("Belt Power", 100);
+        double voltage = DriverStation.getInstance().getBatteryVoltage();
+        //magic code to calculate percent charge from voltage. formula given by quartic regression on empirical data. DO NOT TOUCH
+        //DO NOT TOUCH NEXT LINE
+        SmartDashboard.putNumber(" initial charge percent", (voltage > 11.7?(voltage < 12.6?337.90418311119*MathUtils.pow(voltage, 4)-16321.796968975*MathUtils.pow(voltage, 3)+295645.26274574*MathUtils.pow(voltage, 2)-2379991.6548433*voltage+7184291.5749442:125):-10));
+        //DO NOT TOUCH PREVIOUS LINE
     }
 
     /**
@@ -107,7 +114,7 @@ public class FinalRobot extends IterativeRobot {
         if (driver) {
 //            System.out.println("trigger");
             absCtrlMode.set(joy1.getRawButton(8));
-            drive.mecanumDrive_Cartesian(joy2.getX(), joy2.getY(), joy1.getX(), absCtrlMode.getValue() ? gyro.getAngle() : 0);
+            drive.mecanumDrive_Cartesian(joy2.getX(), -joy2.getY(), joy1.getX(), absCtrlMode.getValue() ? gyro.getAngle() : 0);
         } else {
             if (joy2.getRawButton(4) && !joy2.getRawButton(5)) {
                 gunnerX = -0.3;
@@ -127,15 +134,15 @@ public class FinalRobot extends IterativeRobot {
             drive.mecanumDrive_Cartesian(gunnerX, gunnerY, (-gyro.getAngle() + heading) / 20, 0);
         }
         if (joy2.getRawButton(11)) {
-            arm.set(-SmartDashboard.getNumber("Climber Power") / 100);
+            arm.set(-SmartDashboard.getNumber("Belt Power") / 100);
         } else if (joy2.getRawButton(10)) {
-            arm.set(SmartDashboard.getNumber("Climber Power") / 100);
+            arm.set(SmartDashboard.getNumber("Belt Power") / 100);
         } else {
             arm.set(0);
         }
-        if (joy2.getRawButton(6)) {
+        if (joy2.getRawButton(6) || joy2.getRawButton(3)) {
             arm2.set(SmartDashboard.getNumber("Shoulder Power") / 100);
-        } else if (joy2.getRawButton(7)) {
+        } else if (joy2.getRawButton(7) || joy2.getRawButton(2)) {
             arm2.set(-SmartDashboard.getNumber("Shoulder Power") / 100);
         } else {
             arm2.set(0);
@@ -219,5 +226,10 @@ public class FinalRobot extends IterativeRobot {
      * This function is called periodically during test mode
      */
     public void testPeriodic() {
+        double voltage = DriverStation.getInstance().getBatteryVoltage();
+        //magic code to calculate percent charge from voltage. formula given by quartic regression on empirical data. DO NOT TOUCH
+        //DO NOT TOUCH NEXT LINE
+        SmartDashboard.putNumber(" initial charge percent", (voltage > 11.7?(voltage < 12.6?337.90418311119*MathUtils.pow(voltage, 4)-16321.796968975*MathUtils.pow(voltage, 3)+295645.26274574*MathUtils.pow(voltage, 2)-2379991.6548433*voltage+7184291.5749442:125):-10));
+        //DO NOT TOUCH PREVIOUS LINE
     }
 }
