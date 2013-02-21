@@ -73,6 +73,7 @@ public class ImageTargeter extends IterativeRobot {
         cc = new CriteriaCollection();
         cc.addCriteria(NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_WIDTH, 30, 400, false);
         cc.addCriteria(NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_HEIGHT, 40, 400, false);
+        camera.writeWhiteBalance(AxisCamera.WhiteBalanceT.fixedFlour1);
     }
 
     /**
@@ -87,6 +88,7 @@ public class ImageTargeter extends IterativeRobot {
     public void teleopPeriodic() {
 //        System.out.println("teleop");
 //        System.out.println(joy1.getRawButton(1));
+        System.out.println(camera.getWhiteBalance());
         if (!fireControl) {
             launchPwr = -SmartDashboard.getNumber("Launch Power") / 100;
             injPwr = -SmartDashboard.getNumber("Injector Power") / 100;
