@@ -108,7 +108,9 @@ public class DaisyCVWidget extends WPICameraExtension
         rangeTable.put(250.0, 4794.0+kRangeOffset);
         rangeTable.put(260.0, 5034.0+kRangeOffset);
         rangeTable.put(270.0, 5234.0+kRangeOffset);
-
+        for( double key : rangeTable.keySet() ) {
+            Robot.getTable().putDouble("angle lookup "+key, 0.0);
+        }
         DaisyExtensions.init();
     }
 
@@ -121,7 +123,8 @@ public class DaisyCVWidget extends WPICameraExtension
         {
             if( range < key )
             {
-                double highVal = rangeTable.get(key);
+//                double highVal = rangeTable.get(key);
+                double highVal = Robot.getTable().getDouble("angle lookup "+key);
                 if( lowKey > 0.0 )
                 {
                     double m = (range-lowKey)/(key-lowKey);
@@ -131,7 +134,8 @@ public class DaisyCVWidget extends WPICameraExtension
                     return highVal;
             }
             lowKey = key;
-            lowVal = rangeTable.get(key);
+            lowVal = Robot.getTable().getDouble("angle "+key);
+//            lowVal = rangeTable.get(key);
         }
 
         return 5234.0+kRangeOffset;
