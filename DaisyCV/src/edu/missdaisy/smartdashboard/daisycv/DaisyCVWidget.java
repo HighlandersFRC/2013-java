@@ -113,7 +113,7 @@ public class DaisyCVWidget extends WPICameraExtension
     }
 
 
-    public double getRPMsForRange(double range)
+    public double getElevationForRange(double range)
     {
         double lowKey = -1.0;
         double lowVal = -1.0;
@@ -141,6 +141,7 @@ public class DaisyCVWidget extends WPICameraExtension
     public WPIImage processImage(WPIColorImage rawImage)
     {
         double heading = 0.0;
+        double armAngle = 0.0;
         
         // Get the current heading of the robot first
         if( !m_debugMode )
@@ -148,6 +149,7 @@ public class DaisyCVWidget extends WPICameraExtension
             try
             {
                 heading = Robot.getTable().getDouble("Heading");
+                armAngle = Robot.getTable().getDouble("Arm Angle");
             }
             catch( NoSuchElementException e)
             {
@@ -278,7 +280,7 @@ public class DaisyCVWidget extends WPICameraExtension
 
             double azimuth = this.boundAngle0to360Degrees(x*kHorizontalFOVDeg/2.0 + heading - kShooterOffsetDeg);
             double range = (kTopTargetHeightIn-kCameraHeightIn)/Math.tan((y*kVerticalFOVDeg/2.0 + kCameraPitchDeg)*Math.PI/180.0);
-            double rpms = getRPMsForRange(range);
+            double elevation = getElevationForRange(range);
 
             if (!m_debugMode)
             {
@@ -287,7 +289,8 @@ public class DaisyCVWidget extends WPICameraExtension
                 Robot.getTable().putBoolean("found", true);
                 Robot.getTable().putNumber("range", range);
                 Robot.getTable().putDouble("azimuth", azimuth);
-                Robot.getTable().putDouble("rpms", rpms);
+                Robot.getTable().putDouble("elevation", elevation);
+                Robot.getTable().putDouble("elevation offset", elevation - armAngle);
 //                Robot.getTable().endTransaction();
             } else
             {
@@ -296,7 +299,7 @@ public class DaisyCVWidget extends WPICameraExtension
                 System.out.println("y: " + y);
                 System.out.println("azimuth: " + azimuth);
                 System.out.println("range: " + range);
-                System.out.println("rpms: " + rpms);
+                System.out.println("elevation: " + elevation);
             }
             rawImage.drawPolygon(square, targetColor, 7);
         } else
