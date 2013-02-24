@@ -89,17 +89,17 @@ public class Shooter extends IterativeRobot {
         if (!fireControl) {
             launchPwr = -SmartDashboard.getNumber("Launch Power") / 100;
             injPwr = -SmartDashboard.getNumber("Injector Power") / 100;
-            if (joy1.getRawButton(7)) {
+            if (joy2.getRawButton(7)) {
                 feed.set(DoubleSolenoid.Value.kReverse);
-            } else if(joy1.getRawButton(6)) {
+            } else if(joy2.getRawButton(8)) {
                 feed.set(DoubleSolenoid.Value.kForward);
             } else {
                 feed.set(DoubleSolenoid.Value.kOff);
             }
         }
-        if (joy1.getRawButton(3)) {
+        if (joy2.getRawButton(9)) {
             wheel = true;
-        } else if (joy1.getRawButton(2)) {
+        } else if (joy2.getRawButton(10)) {
             wheel = false;
         }
         if (wheel && !fireControl) {
@@ -109,13 +109,13 @@ public class Shooter extends IterativeRobot {
             launch.set(0);
             injector.set(0);
         }
-        if (joy1.getRawButton(10)) {
+        if (joy2.getRawButton(11)) {
             comp.stop();
         }
-        if (joy2.getRawButton(11)) {
+        if (joy2.getRawButton(12)) {
             comp.start();
         }
-        if (joy1.getRawButton(1) && !fireControl) {
+        if (joy2.getRawButton(1) && !fireControl) {
             System.out.println("fireStart");
             injPulsePwr = -SmartDashboard.getNumber("Injector Pulse Power")/100;
             launchPulsePwr = -SmartDashboard.getNumber("Launcher Pulse Power")/100;
