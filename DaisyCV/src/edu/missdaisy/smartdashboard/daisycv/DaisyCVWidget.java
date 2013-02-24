@@ -134,7 +134,7 @@ public class DaisyCVWidget extends WPICameraExtension
                     return highVal;
             }
             lowKey = key;
-            lowVal = Robot.getTable().getDouble("angle "+key);
+            lowVal = Robot.getTable().getDouble("angle lookup "+key);
 //            lowVal = rangeTable.get(key);
         }
 
