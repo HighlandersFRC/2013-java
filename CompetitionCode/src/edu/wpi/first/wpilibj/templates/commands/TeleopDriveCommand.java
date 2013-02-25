@@ -20,7 +20,7 @@ public class TeleopDriveCommand extends CommandBase {
     }
 
     protected void execute() {
-        drive.driveRel(oi.joy1.getAxis(Joystick.AxisType.kX), oi.joy1.getAxis(Joystick.AxisType.kY), oi.joy2.getAxis(Joystick.AxisType.kX));
+        drive.driveRel(oi.drivex.get(), oi.drivey.get(), oi.driveTheta.get());
     }
 
     protected boolean isFinished() {

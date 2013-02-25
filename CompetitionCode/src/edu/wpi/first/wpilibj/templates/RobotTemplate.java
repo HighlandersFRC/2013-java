@@ -69,6 +69,7 @@ public class RobotTemplate extends IterativeRobot {
         Scheduler.getInstance().run();
     }
     public void disabledInit() {
+        autonomousCommand.cancel();
         teleopCommand.cancel();
     }
     /**

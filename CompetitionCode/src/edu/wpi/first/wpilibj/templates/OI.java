@@ -41,10 +41,16 @@ public class OI {
     // button.whenReleased(new ExampleCommand());
     public Joystick joy1 = new Joystick(1);
     public Joystick joy2 = new Joystick(2);
-    Button climbUpButton = new JoystickButton(joy1, 11);
-    Button climbDownButton = new JoystickButton(joy1, 10);
-    Button startCompButton = new JoystickButton(joy1, 3);
-    Button stopCompButton = new JoystickButton(joy1, 2);
+    public Button climbUpButton = new JoystickButton(joy1, 11);
+    public Button climbDownButton = new JoystickButton(joy1, 10);
+    public Button startCompButton = new JoystickButton(joy1, 3);
+    public Button stopCompButton = new JoystickButton(joy1, 2);
+    public Button lockonButton = new JoystickButton(joy2, 2);
+    public Button fireButton = new JoystickButton(joy2, 1);
+    public JoystickAxis drivex = new JoystickAxis(joy2, Joystick.AxisType.kX.value);
+    public JoystickAxis drivey = new JoystickAxis(joy2, Joystick.AxisType.kY.value);
+    public JoystickAxis driveTheta = new JoystickAxis(joy1, Joystick.AxisType.kX.value);
+    
 
     {
         climbUpButton.whenPressed(new ClimbUpCommand());
