@@ -94,6 +94,50 @@ public class FinalRobot extends IterativeRobot {
      * This function is called periodically during operator control
      */
     public void teleopPeriodic() {
+        /*
+         * controls:
+         * joystick 2, x-axis(left-right): drive translation x-axis(left-right)
+         * joystick 2, y-axis(front-back): drive translation y-axis(front-back)
+         * joystick 1, x-axis(left-right): drive rotation(counterclockwise-clockwise)
+         * joystick 2, button 1(trigger): engage firing cycle
+         * joystick 2, button 2(secondary fire): lock on target; unused until: camera mounted
+         *      arm gyro connected
+         *      targeting code tested
+         * joystick 2, button 7(base buttons): manual override(retract feed piston)
+         * joystick 2, button 8(base buttons): manual override(extend feed piston)
+         * joystick 2, button 9(base buttons): spin up shooter
+         * joystick 2, button 10(base buttons): spin down shooter
+         * joystick 2, button 11(base buttons): disable compressor (may be irrelevant if compressor is offboard)
+         * joystick 2, button 12(base buttons): enable compressor (may be irrelevant if compressor is offboard)
+         * joystick 1, button 9(back buttons): toggle alignment mode
+         *      depends on hardware not installed; DO NOT TOUCH
+         * joystick 1, button 8(back buttons): toggle absolute control mode
+         *      depends on hardware not installed; unknown effect, possibilities:
+         *          nothing
+         *          unpredictable direction mapping
+         * joystick 2, button 3(top buttons): rotate shoulder forward
+         *      this control may be added to gunner's joysticks to reduce the driver's need to multitask
+         *      may be remapped if awkward to control.
+         * joystick 2, button 4(top buttons): rotate shoulder backward
+         *      this control may be added to gunner's joysticks to reduce the driver's need to multitask
+         *      may be remapped if awkward to control.
+         * joystick 2, button 5(top buttons): raise climbing claws
+         *      may be remapped if awkward to control.
+         * joystick 2, button 6(top buttons): lower climbing claws
+         *      may be remapped if awkward to control.
+         * additional notes: be cautious about initiating a firing cycle while moving or accelerating rapidly,
+         *          this causes a large voltage drop with possible side effects including:
+         *              loss of power to motors slowing motion and making shots miss
+         *              loss of sensor calibration (could cause failure to maintain cylinder
+         *                  or even cause attempt to put arm in impossible position.(bad))
+         *              brown out of cRIO (possible regain of control after reboot, not guaranteed)
+         *          however these are worst case scenarios and most likely will not occur, however caution is advised
+         *      no fields on the smart dashboard should be edited during the match if possible.
+         *      The CV widget can be used to aim if the camera is mounted.
+         *      We (of the programming team) can add/change controls at request
+         *          however, we will endeavor to minimize control changes otherwise.
+         *          if we must change the controls we will notify people if feasible.
+         */
 //        System.out.println("Joystick: (" + joy1.getX()+", "+joy1.getY()+", "+joy2.getX()+")");
 //        System.out.println(accel.getAccelerations());
 //        System.out.println("test");
