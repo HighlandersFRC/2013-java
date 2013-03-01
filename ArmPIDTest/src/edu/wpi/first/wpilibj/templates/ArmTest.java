@@ -59,6 +59,7 @@ public class ArmTest extends IterativeRobot {
         armpid.setSetpoint(-22);
     }
     public void teleopPeriodic() {
+        armpid.setPID(SmartDashboard.getNumber("kP"), SmartDashboard.getNumber("kI"), SmartDashboard.getNumber("kD"));
         if (joy1.getRawButton(1)) {
             armpid.enable();
         } else {
