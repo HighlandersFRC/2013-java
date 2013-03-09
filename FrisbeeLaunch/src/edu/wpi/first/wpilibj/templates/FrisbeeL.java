@@ -72,90 +72,134 @@ public class FrisbeeL extends IterativeRobot {
      * This function is called periodically during operator control
      */
     public void teleopPeriodic() {
-//        System.out.println("teleop");
-//        System.out.println(joy1.getRawButton(1));
         if (!fireControl) {
             launchPwr = -SmartDashboard.getNumber("Launch Power") / 100;
             injPwr = -SmartDashboard.getNumber("Injector Power") / 100;
-            if (joy1.getRawButton(7)) {
-                feed.set(DoubleSolenoid.Value.kReverse);
-            } else if(joy1.getRawButton(6)) {
-                feed.set(DoubleSolenoid.Value.kForward);
-            } else {
-                feed.set(DoubleSolenoid.Value.kOff);
+            if (joy1.getRawButton(2)) {
+                launch.set(launchPwr);
             }
         }
-        if (joy1.getRawButton(3)) {
-            wheel = true;
-        } else if (joy1.getRawButton(2)) {
-            wheel = false;
+        if (joy1.getRawButton(2)) {
+            if (joy1.getRawButton(1) && !fireControl) {
+                System.out.println("fireStart");
+                injPulsePwr = -SmartDashboard.getNumber("Injector Pulse Power") / 100;
+                launchPulsePwr = -SmartDashboard.getNumber("Launcher Pulse Power") / 100;
+                injPulseLen = SmartDashboard.getNumber("Injector Pulse Length");
+                launchPulseLen = SmartDashboard.getNumber("Launcher Pulse Length");
+                injPulseDel = SmartDashboard.getNumber("Injector Pulse Delay");
+                launchPulseDel = SmartDashboard.getNumber("Launcher Pulse Delay");
+                feedTime = SmartDashboard.getNumber("Piston Extension Time");
+                defaultPistonState = SmartDashboard.getBoolean("Piston Default State");
+                injector.set(injPwr);
+                fireControl = true;
+                fireState = 0;
+                startTime = Timer.getFPGATimestamp() + (defaultPistonState ? feedTime : 0);
+            }
+            if (fireControl) {
+                System.out.println("firing");
+                double currTime = Timer.getFPGATimestamp();
+                double fireTime = currTime - startTime;
+                if (fireTime >= 0) {
+                    feed.set(DoubleSolenoid.Value.kForward);
+                }
+                if (fireTime >= injPulseDel && fireTime < injPulseDel + injPulseLen) {
+                    injector.set(injPulsePwr);
+                }
+                if (fireTime >= launchPulseDel && fireTime < launchPulseDel + launchPulseLen) {
+                    launch.set(launchPulsePwr);
+                }
+                if (fireTime >= injPulseDel + injPulseLen) {
+                    injector.set(0);
+                }
+                if (fireTime >= launchPulseDel + launchPulseLen) {
+                    launch.set(launchPwr);
+                }
+                if (fireTime >= feedTime) {
+                    feed.set(defaultPistonState ? DoubleSolenoid.Value.kOff : DoubleSolenoid.Value.kReverse);
+                }
+                if (fireTime >= Math.max(Math.max(injPulseDel + injPulseLen, launchPulseDel + launchPulseLen), feedTime + 0.1)) {
+                    if (!joy1.getRawButton(1)) {
+                        fireControl = false;
+                        feed.set(DoubleSolenoid.Value.kOff);
+                    }
+                }
+            }
         }
-        if (wheel && !fireControl) {
-            launch.set(launchPwr);
-            injector.set(injPwr);
-        } else if (!fireControl) {
+        else {
             launch.set(0);
             injector.set(0);
         }
 
-
-
-        if (joy2.getRawButton(2)) {
-            comp.stop();
-        }
-        if (joy2.getRawButton(3)) {
-            comp.start();
-        }
-        if (joy1.getRawButton(1) && !fireControl) {
-            System.out.println("fireStart");
-            injPulsePwr = -SmartDashboard.getNumber("Injector Pulse Power")/100;
-            launchPulsePwr = -SmartDashboard.getNumber("Launcher Pulse Power")/100;
-            injPulseLen = SmartDashboard.getNumber("Injector Pulse Length");
-            launchPulseLen = SmartDashboard.getNumber("Launcher Pulse Length");
-            injPulseDel = SmartDashboard.getNumber("Injector Pulse Delay");
-            launchPulseDel = SmartDashboard.getNumber("Launcher Pulse Delay");
-            feedTime = SmartDashboard.getNumber("Piston Extension Time");
-            defaultPistonState = SmartDashboard.getBoolean("Piston Default State");
-            feed.set(DoubleSolenoid.Value.kReverse);
-            fireControl = true;
-            fireState = 0;
-            startTime = Timer.getFPGATimestamp()+(defaultPistonState?feedTime:0);
-        }
-        if (fireControl) {
-            System.out.println("firing");
-            double currTime = Timer.getFPGATimestamp();
-            double fireTime = currTime - startTime;
-            if (fireTime >= 0) {
-                feed.set(DoubleSolenoid.Value.kForward);
-            }
-            if (fireTime >= injPulseDel && fireTime < injPulseDel + injPulseLen) {
-                injector.set(injPulsePwr);
-            }
-            if (fireTime >= launchPulseDel && fireTime < launchPulseDel + launchPulseLen) {
-                launch.set(launchPulsePwr);
-            }
-            if (fireTime >= injPulseDel + injPulseLen) {
-                injector.set(injPwr);
-            }
-            if (fireTime >= launchPulseDel + launchPulseLen) {
-                launch.set(launchPwr);
-            }
-            if (fireTime >= feedTime) {
-                    feed.set(defaultPistonState?DoubleSolenoid.Value.kOff:DoubleSolenoid.Value.kReverse);
-            }
-            if (fireTime >= Math.max(Math.max(injPulseDel + injPulseLen, launchPulseDel + launchPulseLen),feedTime+0.1)) {
-                if (!joy1.getRawButton(1)) {
-                    fireControl = false;
-                    feed.set(DoubleSolenoid.Value.kOff);
-                }
-            }
-        }
-//        Timer.delay(0.1);
-    }
-
-    /**
-     * This function is called periodically during test mode
-     */
-    public void testPeriodic() {
+//        System.out.println("teleop");
+//        System.out.println(joy1.getRawButton(1));
+//        if (!fireControl) {
+//            launchPwr = -SmartDashboard.getNumber("Launch Power") / 100;
+//            injPwr = -SmartDashboard.getNumber("Injector Power") / 100;
+//            if (joy1.getRawButton(7)) {
+//                feed.set(DoubleSolenoid.Value.kReverse);
+//            } else if(joy1.getRawButton(6)) {
+//                feed.set(DoubleSolenoid.Value.kForward);
+//            } else {
+//                feed.set(DoubleSolenoid.Value.kOff);
+//            }
+//        }
+//        if (joy1.getRawButton(3)) {
+//            wheel = true;
+//        } else if (joy1.getRawButton(2)) {
+//            wheel = false;
+//        }
+//        if (wheel && !fireControl) {
+//            launch.set(launchPwr);
+//            injector.set(injPwr);
+//        } else if (!fireControl) {
+//            launch.set(0);
+//            injector.set(0);
+//        }
+//
+//
+//
+//        if (joy1.getRawButton(1) && !fireControl) {
+//            System.out.println("fireStart");
+//            injPulsePwr = -SmartDashboard.getNumber("Injector Pulse Power")/100;
+//            launchPulsePwr = -SmartDashboard.getNumber("Launcher Pulse Power")/100;
+//            injPulseLen = SmartDashboard.getNumber("Injector Pulse Length");
+//            launchPulseLen = SmartDashboard.getNumber("Launcher Pulse Length");
+//            injPulseDel = SmartDashboard.getNumber("Injector Pulse Delay");
+//            launchPulseDel = SmartDashboard.getNumber("Launcher Pulse Delay");
+//            feedTime = SmartDashboard.getNumber("Piston Extension Time");
+//            defaultPistonState = SmartDashboard.getBoolean("Piston Default State");
+//            feed.set(DoubleSolenoid.Value.kReverse);
+//            fireControl = true;
+//            fireState = 0;
+//            startTime = Timer.getFPGATimestamp()+(defaultPistonState?feedTime:0);
+//        }
+//        if (fireControl) {
+//            System.out.println("firing");
+//            double currTime = Timer.getFPGATimestamp();
+//            double fireTime = currTime - startTime;
+//            if (fireTime >= 0) {
+//                feed.set(DoubleSolenoid.Value.kForward);
+//            }
+//            if (fireTime >= injPulseDel && fireTime < injPulseDel + injPulseLen) {
+//                injector.set(injPulsePwr);
+//            }
+//            if (fireTime >= launchPulseDel && fireTime < launchPulseDel + launchPulseLen) {
+//                launch.set(launchPulsePwr);
+//            }
+//            if (fireTime >= injPulseDel + injPulseLen) {
+//                injector.set(injPwr);
+//            }
+//            if (fireTime >= launchPulseDel + launchPulseLen) {
+//                launch.set(launchPwr);
+//            }
+//            if (fireTime >= feedTime) {
+//                    feed.set(defaultPistonState?DoubleSolenoid.Value.kOff:DoubleSolenoid.Value.kReverse);
+//            }
+//            if (fireTime >= Math.max(Math.max(injPulseDel + injPulseLen, launchPulseDel + launchPulseLen),feedTime+0.1)) {
+//                if (!joy1.getRawButton(1)) {
+//                    fireControl = false;
+//                    feed.set(DoubleSolenoid.Value.kOff);
     }
 }
+//        Timer.delay(0.1);
+
