@@ -66,6 +66,7 @@ public class FrisbeeL extends IterativeRobot {
      * This function is called periodically during autonomous
      */
     public void autonomousPeriodic() {
+        injector.set(1);
     }
 
     /**
@@ -77,6 +78,18 @@ public class FrisbeeL extends IterativeRobot {
             injPwr = -SmartDashboard.getNumber("Injector Power") / 100;
             if (joy1.getRawButton(2)) {
                 launch.set(launchPwr);
+            } else {
+                launch.set(0);
+            }
+            if (joy1.getRawButton(8)) {
+                injector.set(1);
+                System.out.println("fwd");
+            } else if (joy1.getRawButton(7)) {
+                injector.set(-1);
+                System.out.println("back");
+            } else {
+                injector.set(0);
+                System.out.println("off");
             }
         }
         if (joy1.getRawButton(2)) {
@@ -89,7 +102,7 @@ public class FrisbeeL extends IterativeRobot {
                 injPulseDel = SmartDashboard.getNumber("Injector Pulse Delay");
                 launchPulseDel = SmartDashboard.getNumber("Launcher Pulse Delay");
                 feedTime = SmartDashboard.getNumber("Piston Extension Time");
-                defaultPistonState = SmartDashboard.getBoolean("Piston Default State");
+                defaultPistonState = SmartDashboard.getBoolean("Piston Default Extended");
                 injector.set(injPwr);
                 fireControl = true;
                 fireState = 0;
@@ -124,8 +137,7 @@ public class FrisbeeL extends IterativeRobot {
                     }
                 }
             }
-        }
-        else {
+        } else {
             launch.set(0);
             injector.set(0);
         }
