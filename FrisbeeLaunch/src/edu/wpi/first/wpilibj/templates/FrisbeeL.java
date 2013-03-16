@@ -6,10 +6,10 @@
 /*----------------------------------------------------------------------------*/
 package edu.wpi.first.wpilibj.templates;
 
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -31,11 +31,13 @@ public class FrisbeeL extends IterativeRobot {
     Joystick joy2 = new Joystick(2);
     Victor launch = new Victor(5);
     Victor injector = new Victor(6);
-    Compressor comp = new Compressor(1, 1);
-    DoubleSolenoid feed = new DoubleSolenoid(1, 2);
+//    Compressor comp = new Compressor(1, 1);
+//    DoubleSolenoid feed = new DoubleSolenoid(1, 2);
     boolean wheel = false;
     LatchedBoolean hoppercontrol = new LatchedBoolean();
     boolean fireControl = false;
+    DigitalInput limitSwitch = new DigitalInput(1);
+    Servo indexer = new Servo(7);
     int fireState;
     double injPwr;
     double launchPwr;
@@ -50,13 +52,13 @@ public class FrisbeeL extends IterativeRobot {
     boolean defaultPistonState;
 
     public void robotInit() {
-        SmartDashboard.putNumber("Launch Power", 60);
-        SmartDashboard.putNumber("Injector Power", 45);
-        SmartDashboard.putNumber("Injector Pulse Delay", 0);
+        SmartDashboard.putNumber("Launch Power", 55);
+        SmartDashboard.putNumber("Injector Power", 100);
+        SmartDashboard.putNumber("Injector Pulse Delay", 0.14);
         SmartDashboard.putNumber("Launcher Pulse Delay", 0);
-        SmartDashboard.putNumber("Injector Pulse Power", 100);
+        SmartDashboard.putNumber("Injector Pulse Power", -25);
         SmartDashboard.putNumber("Launcher Pulse Power", 100);
-        SmartDashboard.putNumber("Injector Pulse Length", 0.25);
+        SmartDashboard.putNumber("Injector Pulse Length", 0.5);
         SmartDashboard.putNumber("Launcher Pulse Length", 0.25);
         SmartDashboard.putNumber("Piston Extension Time", 0.75);
         SmartDashboard.putBoolean("Piston Default Extended", false);
@@ -73,30 +75,38 @@ public class FrisbeeL extends IterativeRobot {
      * This function is called periodically during operator control
      */
     public void teleopPeriodic() {
+        SmartDashboard.putBoolean("limitSwitch", limitSwitch.get());
+        if (joy1.getRawButton(9)) {
+            indexer.set(0);
+        } else if(joy1.getRawButton(10)) {
+            indexer.set(1);
+        } else {
+            indexer.set(0.5);
+        }
         if (!fireControl) {
-            launchPwr = -SmartDashboard.getNumber("Launch Power") / 100;
-            injPwr = -SmartDashboard.getNumber("Injector Power") / 100;
+            launchPwr = SmartDashboard.getNumber("Launch Power") / 100;
+            injPwr = SmartDashboard.getNumber("Injector Power") / 100;
             if (joy1.getRawButton(2)) {
                 launch.set(launchPwr);
             } else {
                 launch.set(0);
             }
             if (joy1.getRawButton(8)) {
-                injector.set(1);
-                System.out.println("fwd");
+                injector.set(0.25);
+//                System.out.println("fwd");
             } else if (joy1.getRawButton(7)) {
-                injector.set(-1);
-                System.out.println("back");
+                injector.set(-0.25);
+//                System.out.println("back");
             } else {
                 injector.set(0);
-                System.out.println("off");
+//                System.out.println("off");
             }
         }
         if (joy1.getRawButton(2)) {
             if (joy1.getRawButton(1) && !fireControl) {
-                System.out.println("fireStart");
-                injPulsePwr = -SmartDashboard.getNumber("Injector Pulse Power") / 100;
-                launchPulsePwr = -SmartDashboard.getNumber("Launcher Pulse Power") / 100;
+//                System.out.println("fireStart");
+                injPulsePwr = SmartDashboard.getNumber("Injector Pulse Power") / 100;
+                launchPulsePwr = SmartDashboard.getNumber("Launcher Pulse Power") / 100;
                 injPulseLen = SmartDashboard.getNumber("Injector Pulse Length");
                 launchPulseLen = SmartDashboard.getNumber("Launcher Pulse Length");
                 injPulseDel = SmartDashboard.getNumber("Injector Pulse Delay");
@@ -109,11 +119,11 @@ public class FrisbeeL extends IterativeRobot {
                 startTime = Timer.getFPGATimestamp() + (defaultPistonState ? feedTime : 0);
             }
             if (fireControl) {
-                System.out.println("firing");
+//                System.out.println("firing");
                 double currTime = Timer.getFPGATimestamp();
                 double fireTime = currTime - startTime;
                 if (fireTime >= 0) {
-                    feed.set(DoubleSolenoid.Value.kForward);
+//                    feed.set(DoubleSolenoid.Value.kForward);
                 }
                 if (fireTime >= injPulseDel && fireTime < injPulseDel + injPulseLen) {
                     injector.set(injPulsePwr);
@@ -121,19 +131,19 @@ public class FrisbeeL extends IterativeRobot {
                 if (fireTime >= launchPulseDel && fireTime < launchPulseDel + launchPulseLen) {
                     launch.set(launchPulsePwr);
                 }
-                if (fireTime >= injPulseDel + injPulseLen) {
+                if (fireTime >= injPulseDel + injPulseLen || (fireTime >= injPulseDel && limitSwitch.get())) {
                     injector.set(0);
                 }
                 if (fireTime >= launchPulseDel + launchPulseLen) {
                     launch.set(launchPwr);
                 }
                 if (fireTime >= feedTime) {
-                    feed.set(defaultPistonState ? DoubleSolenoid.Value.kOff : DoubleSolenoid.Value.kReverse);
+//                    feed.set(defaultPistonState ? DoubleSolenoid.Value.kOff : DoubleSolenoid.Value.kReverse);
                 }
                 if (fireTime >= Math.max(Math.max(injPulseDel + injPulseLen, launchPulseDel + launchPulseLen), feedTime + 0.1)) {
                     if (!joy1.getRawButton(1)) {
                         fireControl = false;
-                        feed.set(DoubleSolenoid.Value.kOff);
+//                        feed.set(DoubleSolenoid.Value.kOff);
                     }
                 }
             }
