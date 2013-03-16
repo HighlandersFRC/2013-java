@@ -96,9 +96,10 @@ public class FinalRobot extends IterativeRobot {
         SmartDashboard.putBoolean("Piston Default Extended", false);
         SmartDashboard.putNumber("Shoulder Power", 100);
         SmartDashboard.putNumber("Belt Power", 100);
-        SmartDashboard.putNumber("kP", pref.getDouble("kp", 1));
-        SmartDashboard.putNumber("kI", pref.getDouble("kI", 1));
-        SmartDashboard.putNumber("kD", pref.getDouble("kD", 1));
+        SmartDashboard.putNumber("kP", pref.getDouble("kp", 0.01));
+        SmartDashboard.putNumber("kI", pref.getDouble("kI", 0));
+        SmartDashboard.putNumber("kD", pref.getDouble("kD", 0));
+        SmartDashboard.putData("autoChooser", autoChooser);
         double voltage = DriverStation.getInstance().getBatteryVoltage();
         //magic code to calculate percent charge from voltage. formula given by quartic regression on empirical data. DO NOT TOUCH
         //DO NOT TOUCH NEXT LINE
