@@ -41,31 +41,25 @@ import javax.imageio.ImageIO;
  *
  * @author jrussell
  */
-public class DaisyCVWidget extends WPICameraExtension
-{
+public class DaisyCVWidget extends WPICameraExtension {
+
     public static final String NAME = "DaisyCV Target Tracker";
     private WPIColor targetColor = new WPIColor(0, 255, 0);
-
     // Constants that need to be tuned
     private static final double kNearlyHorizontalSlope = Math.tan(Math.toRadians(20));
-    private static final double kNearlyVerticalSlope = Math.tan(Math.toRadians(90-20));
-    private static final int kMinWidth = 20;
-    private static final int kMaxWidth = 200;
+    private static final double kNearlyVerticalSlope = Math.tan(Math.toRadians(90 - 20));
+    private static final int kMinWidth = 1;
+    private static final int kMaxWidth = 400;
     private static final double kRangeOffset = 0.0;
     private static final int kHoleClosingIterations = 14;
-
     private static final double kShooterOffsetDeg = -1.55;
     private static final double kHorizontalFOVDeg = 47.0;
-
-    private static final double kVerticalFOVDeg = 480.0/640.0*kHorizontalFOVDeg;
+    private static final double kVerticalFOVDeg = 600.0 / 800.0 * kHorizontalFOVDeg;
     private static final double kCameraHeightIn = 34.0;
     private static final double kCameraPitchDeg = 4.0;
     private static final double kTopTargetHeightIn = 104.125 + 6.0; // 104.125 to rim, +6 to center of target
-
     private TreeMap<Double, Double> rangeTable;
-
     private boolean m_debugMode = false;
-
     // Store JavaCV temporaries as members to reduce memory management during processing
     private CvSize size = null;
     private WPIContour[] contours;
@@ -80,100 +74,87 @@ public class DaisyCVWidget extends WPICameraExtension
     private WPIPoint linePt2;
     private int horizontalOffsetPixels;
 
-    public DaisyCVWidget()
-    {
+    public DaisyCVWidget() {
         this(false);
     }
 
-    public DaisyCVWidget(boolean debug)
-    {
+    public DaisyCVWidget(boolean debug) {
         m_debugMode = debug;
         morphKernel = IplConvKernel.create(3, 3, 1, 1, opencv_imgproc.CV_SHAPE_RECT, null);
 
-        rangeTable = new TreeMap<Double,Double>();
+        rangeTable = new TreeMap<Double, Double>();
         //rangeTable.put(110.0, 3800.0+kRangeOffset);
         //rangeTable.put(120.0, 3900.0+kRangeOffset);
         //rangeTable.put(130.0, 4000.0+kRangeOffset);
-        rangeTable.put(140.0, 3434.0+kRangeOffset);
-        rangeTable.put(150.0, 3499.0+kRangeOffset);
-        rangeTable.put(160.0, 3544.0+kRangeOffset);
-        rangeTable.put(170.0, 3574.0+kRangeOffset);
-        rangeTable.put(180.0, 3609.0+kRangeOffset);
-        rangeTable.put(190.0, 3664.0+kRangeOffset);
-        rangeTable.put(200.0, 3854.0+kRangeOffset);
-        rangeTable.put(210.0, 4034.0+kRangeOffset);
-        rangeTable.put(220.0, 4284.0+kRangeOffset);
-        rangeTable.put(230.0, 4434.0+kRangeOffset);
-        rangeTable.put(240.0, 4584.0+kRangeOffset);
-        rangeTable.put(250.0, 4794.0+kRangeOffset);
-        rangeTable.put(260.0, 5034.0+kRangeOffset);
-        rangeTable.put(270.0, 5234.0+kRangeOffset);
-        for( double key : rangeTable.keySet() ) {
-            Robot.getTable().putDouble("angle lookup "+key, 0.0);
+        rangeTable.put(140.0, 3434.0 + kRangeOffset);
+        rangeTable.put(150.0, 3499.0 + kRangeOffset);
+        rangeTable.put(160.0, 3544.0 + kRangeOffset);
+        rangeTable.put(170.0, 3574.0 + kRangeOffset);
+        rangeTable.put(180.0, 3609.0 + kRangeOffset);
+        rangeTable.put(190.0, 3664.0 + kRangeOffset);
+        rangeTable.put(200.0, 3854.0 + kRangeOffset);
+        rangeTable.put(210.0, 4034.0 + kRangeOffset);
+        rangeTable.put(220.0, 4284.0 + kRangeOffset);
+        rangeTable.put(230.0, 4434.0 + kRangeOffset);
+        rangeTable.put(240.0, 4584.0 + kRangeOffset);
+        rangeTable.put(250.0, 4794.0 + kRangeOffset);
+        rangeTable.put(260.0, 5034.0 + kRangeOffset);
+        rangeTable.put(270.0, 5234.0 + kRangeOffset);
+        for (double key : rangeTable.keySet()) {
+            Robot.getTable().putDouble("angle lookup " + key, 0.0);
         }
+        Robot.getTable().putInt("Hue Min", 100 - 15);
+        Robot.getTable().putInt("Hue Max", 100 + 15);
         DaisyExtensions.init();
     }
 
-
-    public double getElevationForRange(double range)
-    {
+    public double getElevationForRange(double range) {
         double lowKey = -1.0;
         double lowVal = -1.0;
-        for( double key : rangeTable.keySet() )
-        {
-            if( range < key )
-            {
+        for (double key : rangeTable.keySet()) {
+            if (range < key) {
 //                double highVal = rangeTable.get(key);
-                double highVal = Robot.getTable().getDouble("angle lookup "+key);
-                if( lowKey > 0.0 )
-                {
-                    double m = (range-lowKey)/(key-lowKey);
-                    return lowVal+m*(highVal-lowVal);
-                }
-                else
+                double highVal = Robot.getTable().getDouble("angle lookup " + key);
+                if (lowKey > 0.0) {
+                    double m = (range - lowKey) / (key - lowKey);
+                    return lowVal + m * (highVal - lowVal);
+                } else {
                     return highVal;
+                }
             }
             lowKey = key;
-            lowVal = Robot.getTable().getDouble("angle lookup "+key);
+            lowVal = Robot.getTable().getDouble("angle lookup " + key);
 //            lowVal = rangeTable.get(key);
         }
 
-        return 5234.0+kRangeOffset;
+        return 5234.0 + kRangeOffset;
     }
-    
+
     @Override
-    public WPIImage processImage(WPIColorImage rawImage)
-    {
+    public WPIImage processImage(WPIColorImage rawImage) {
         double heading = 0.0;
         double armAngle = 0.0;
-        
+
         // Get the current heading of the robot first
-        if( !m_debugMode )
-        {
-            try
-            {
+        if (!m_debugMode) {
+            try {
                 heading = Robot.getTable().getDouble("Heading");
                 armAngle = Robot.getTable().getDouble("Arm Angle");
-            }
-            catch( NoSuchElementException e)
-            {
-            }
-            catch( IllegalArgumentException e )
-            {
+            } catch (NoSuchElementException e) {
+            } catch (IllegalArgumentException e) {
             }
         }
 
-        if( size == null || size.width() != rawImage.getWidth() || size.height() != rawImage.getHeight() )
-        {
-            size = opencv_core.cvSize(rawImage.getWidth(),rawImage.getHeight());
+        if (size == null || size.width() != rawImage.getWidth() || size.height() != rawImage.getHeight()) {
+            size = opencv_core.cvSize(rawImage.getWidth(), rawImage.getHeight());
             bin = IplImage.create(size, 8, 1);
             hsv = IplImage.create(size, 8, 3);
             hue = IplImage.create(size, 8, 1);
             sat = IplImage.create(size, 8, 1);
             val = IplImage.create(size, 8, 1);
-            horizontalOffsetPixels =  (int)Math.round(kShooterOffsetDeg*(size.width()/kHorizontalFOVDeg));
-            linePt1 = new WPIPoint(size.width()/2+horizontalOffsetPixels,size.height()-1);
-            linePt2 = new WPIPoint(size.width()/2+horizontalOffsetPixels,0);
+            horizontalOffsetPixels = (int) Math.round(kShooterOffsetDeg * (size.width() / kHorizontalFOVDeg));
+            linePt1 = new WPIPoint(size.width() / 2 + horizontalOffsetPixels, size.height() - 1);
+            linePt2 = new WPIPoint(size.width() / 2 + horizontalOffsetPixels, 0);
         }
         // Get the raw IplImages for OpenCV
         IplImage input = DaisyExtensions.getIplImage(rawImage);
@@ -186,11 +167,11 @@ public class DaisyCVWidget extends WPICameraExtension
         // Hue
         // NOTE: Red is at the end of the color space, so you need to OR together
         // a thresh and inverted thresh in order to get points that are red
-        opencv_imgproc.cvThreshold(hue, bin, 80-15, 255, opencv_imgproc.CV_THRESH_BINARY);
-        opencv_imgproc.cvThreshold(hue, hue, 80+15, 255, opencv_imgproc.CV_THRESH_BINARY_INV);
+        opencv_imgproc.cvThreshold(hue, bin, Robot.getTable().getInt("Hue Min"), 255, opencv_imgproc.CV_THRESH_BINARY);
+        opencv_imgproc.cvThreshold(hue, hue, Robot.getTable().getInt("Hue Max"), 255, opencv_imgproc.CV_THRESH_BINARY_INV);
 
         // Saturation
-        opencv_imgproc.cvThreshold(sat, sat, 200, 255, opencv_imgproc.CV_THRESH_BINARY);
+        opencv_imgproc.cvThreshold(sat, sat, 50, 255, opencv_imgproc.CV_THRESH_BINARY);
 
         // Value
         opencv_imgproc.cvThreshold(val, val, 55, 255, opencv_imgproc.CV_THRESH_BINARY);
@@ -204,6 +185,8 @@ public class DaisyCVWidget extends WPICameraExtension
         // Uncomment the next two lines to see the raw binary image
 //        CanvasFrame result = new CanvasFrame("binary");
 //        result.showImage(bin.getBufferedImage());
+        
+        WPIBinaryImage rawBinWpi = DaisyExtensions.makeWPIBinaryImage(bin);
 
         // Fill in any gaps using binary morphology
         opencv_imgproc.cvMorphologyEx(bin, bin, null, morphKernel, opencv_imgproc.CV_MOP_CLOSE, kHoleClosingIterations);
@@ -217,11 +200,9 @@ public class DaisyCVWidget extends WPICameraExtension
         contours = DaisyExtensions.findConvexContours(binWpi);
 
         polygons = new ArrayList<WPIPolygon>();
-        for (WPIContour c : contours)
-        {
+        for (WPIContour c : contours) {
             double ratio = ((double) c.getHeight()) / ((double) c.getWidth());
-            if (ratio < 1.0 && ratio > 0.1 && c.getWidth() > kMinWidth && c.getWidth() < kMaxWidth)
-            {
+            if (ratio < 1.0 && ratio > 0.1 && c.getWidth() > kMinWidth && c.getWidth() < kMaxWidth) {
                 polygons.add(c.approxPolygon(20));
             }
         }
@@ -229,10 +210,8 @@ public class DaisyCVWidget extends WPICameraExtension
         WPIPolygon square = null;
         int highest = Integer.MAX_VALUE;
 
-        for (WPIPolygon p : polygons)
-        {
-            if (p.isConvex() && p.getNumVertices() == 4)
-            {
+        for (WPIPolygon p : polygons) {
+            if (p.isConvex() && p.getNumVertices() == 4) {
                 // We passed the first test...we fit a rectangle to the polygon
                 // Now do some more tests
 
@@ -240,22 +219,22 @@ public class DaisyCVWidget extends WPICameraExtension
                 // We expect to see a top line that is nearly horizontal, and two side lines that are nearly vertical
                 int numNearlyHorizontal = 0;
                 int numNearlyVertical = 0;
-                for( int i = 0; i < 4; i++ )
-                {
-                    double dy = points[i].getY() - points[(i+1) % 4].getY();
-                    double dx = points[i].getX() - points[(i+1) % 4].getX();
+                for (int i = 0; i < 4; i++) {
+                    double dy = points[i].getY() - points[(i + 1) % 4].getY();
+                    double dx = points[i].getX() - points[(i + 1) % 4].getX();
                     double slope = Double.MAX_VALUE;
-                    if( dx != 0 )
-                        slope = Math.abs(dy/dx);
+                    if (dx != 0) {
+                        slope = Math.abs(dy / dx);
+                    }
 
-                    if( slope < kNearlyHorizontalSlope )
+                    if (slope < kNearlyHorizontalSlope) {
                         ++numNearlyHorizontal;
-                    else if( slope > kNearlyVerticalSlope )
+                    } else if (slope > kNearlyVerticalSlope) {
                         ++numNearlyVertical;
+                    }
                 }
 
-                if(numNearlyHorizontal >= 1 && numNearlyVertical == 2)
-                {
+                if (numNearlyHorizontal >= 1 && numNearlyVertical == 2) {
                     rawImage.drawPolygon(p, WPIColor.BLUE, 2);
 
                     int pCenterX = (p.getX() + (p.getWidth() / 2));
@@ -268,26 +247,22 @@ public class DaisyCVWidget extends WPICameraExtension
                         highest = pCenterY;
                     }
                 }
-            }
-            else
-            {
+            } else {
                 rawImage.drawPolygon(p, WPIColor.YELLOW, 1);
             }
         }
 
-        if (square != null)
-        {
+        if (square != null) {
             double x = square.getX() + (square.getWidth() / 2);
             x = (2 * (x / size.width())) - 1;
             double y = square.getY() + (square.getHeight() / 2);
             y = -((2 * (y / size.height())) - 1);
 
-            double azimuth = this.boundAngle0to360Degrees(x*kHorizontalFOVDeg/2.0 + heading - kShooterOffsetDeg);
-            double range = (kTopTargetHeightIn-kCameraHeightIn)/Math.tan((y*kVerticalFOVDeg/2.0 + kCameraPitchDeg)*Math.PI/180.0);
+            double azimuth = this.boundAngle0to360Degrees(x * kHorizontalFOVDeg / 2.0 + heading - kShooterOffsetDeg);
+            double range = (kTopTargetHeightIn - kCameraHeightIn) / Math.tan((y * kVerticalFOVDeg / 2.0 + kCameraPitchDeg) * Math.PI / 180.0);
             double elevation = getElevationForRange(range);
 
-            if (!m_debugMode)
-            {
+            if (!m_debugMode) {
 
 //                Robot.getTable().beginTransaction();
                 Robot.getTable().putBoolean("found", true);
@@ -296,8 +271,7 @@ public class DaisyCVWidget extends WPICameraExtension
                 Robot.getTable().putDouble("elevation", elevation);
                 Robot.getTable().putDouble("elevation offset", elevation - armAngle);
 //                Robot.getTable().endTransaction();
-            } else
-            {
+            } else {
                 System.out.println("Target found");
                 System.out.println("x: " + x);
                 System.out.println("y: " + y);
@@ -306,46 +280,38 @@ public class DaisyCVWidget extends WPICameraExtension
                 System.out.println("elevation: " + elevation);
             }
             rawImage.drawPolygon(square, targetColor, 7);
-        } else
-        {
+        } else {
 
-            if (!m_debugMode)
-            {
+            if (!m_debugMode) {
                 Robot.getTable().putBoolean("found", false);
-            } else
-            {
+            } else {
                 System.out.println("Target not found");
             }
         }
 
         // Draw a crosshair
         rawImage.drawLine(linePt1, linePt2, targetColor, 2);
-
+//        WPIImage binimage = new WPIImage(bin);
         DaisyExtensions.releaseMemory();
 
         //System.gc();
 
-        return rawImage;
+        return rawImage; 
     }
 
-    private double boundAngle0to360Degrees(double angle)
-    {
+    private double boundAngle0to360Degrees(double angle) {
         // Naive algorithm
-        while(angle >= 360.0)
-        {
+        while (angle >= 360.0) {
             angle -= 360.0;
         }
-        while(angle < 0.0)
-        {
+        while (angle < 0.0) {
             angle += 360.0;
         }
         return angle;
     }
 
-    public static void main(String[] args)
-    {
-        if (args.length == 0)
-        {
+    public static void main(String[] args) {
+        if (args.length == 0) {
             System.out.println("Usage: Arguments are paths to image files to test the program on");
             return;
         }
@@ -354,19 +320,16 @@ public class DaisyCVWidget extends WPICameraExtension
         DaisyCVWidget widget = new DaisyCVWidget(true);
 
         long totalTime = 0;
-        for (int i = 0; i < args.length; i++)
-        {
+        for (int i = 0; i < args.length; i++) {
             // Load the image
             WPIColorImage rawImage = null;
-            try
-            {
-                rawImage = new WPIColorImage(ImageIO.read(new File(args[i%args.length])));
-            } catch (IOException e)
-            {
+            try {
+                rawImage = new WPIColorImage(ImageIO.read(new File(args[i % args.length])));
+            } catch (IOException e) {
                 System.err.println("Could not find file!");
                 return;
             }
-            
+
             //shows the raw image before processing to eliminate the possibility
             //that both may be the modified image.
             CanvasFrame original = new CanvasFrame("Raw");
@@ -385,7 +348,7 @@ public class DaisyCVWidget extends WPICameraExtension
             double milliseconds = (double) (endTime - startTime) / 1000000.0;
             System.out.format("Processing took %.2f milliseconds%n", milliseconds);
             System.out.format("(%.2f frames per second)%n", 1000.0 / milliseconds);
-            
+
             CanvasFrame result = new CanvasFrame("Result");
             result.showImage(resultImage.getBufferedImage());
 
@@ -393,13 +356,11 @@ public class DaisyCVWidget extends WPICameraExtension
             Scanner console = new Scanner(System.in);
             console.nextLine();
 
-            if (original.isVisible())
-            {
+            if (original.isVisible()) {
                 original.setVisible(false);
                 original.dispose();
             }
-            if (result.isVisible())
-            {
+            if (result.isVisible()) {
                 result.setVisible(false);
                 result.dispose();
             }
