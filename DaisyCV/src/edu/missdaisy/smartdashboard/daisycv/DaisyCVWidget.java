@@ -105,6 +105,10 @@ public class DaisyCVWidget extends WPICameraExtension {
         }
         Robot.getTable().putInt("Hue Min", 100 - 15);
         Robot.getTable().putInt("Hue Max", 100 + 15);
+        Robot.getTable().putInt("Sat", 50);
+        Robot.getTable().putInt("Val", 55);
+        Robot.getTable().putBoolean("Show Binary", false);
+        Robot.getTable().putBoolean("Show Morph", false);
         DaisyExtensions.init();
     }
 
@@ -171,10 +175,10 @@ public class DaisyCVWidget extends WPICameraExtension {
         opencv_imgproc.cvThreshold(hue, hue, Robot.getTable().getInt("Hue Max"), 255, opencv_imgproc.CV_THRESH_BINARY_INV);
 
         // Saturation
-        opencv_imgproc.cvThreshold(sat, sat, 50, 255, opencv_imgproc.CV_THRESH_BINARY);
+        opencv_imgproc.cvThreshold(sat, sat, Robot.getTable().getInt("Sat"), 255, opencv_imgproc.CV_THRESH_BINARY);
 
         // Value
-        opencv_imgproc.cvThreshold(val, val, 55, 255, opencv_imgproc.CV_THRESH_BINARY);
+        opencv_imgproc.cvThreshold(val, val, Robot.getTable().getInt("Val"), 255, opencv_imgproc.CV_THRESH_BINARY);
 
         // Combine the results to obtain our binary image which should for the most
         // part only contain pixels that we care about
@@ -185,11 +189,16 @@ public class DaisyCVWidget extends WPICameraExtension {
         // Uncomment the next two lines to see the raw binary image
 //        CanvasFrame result = new CanvasFrame("binary");
 //        result.showImage(bin.getBufferedImage());
-        
-        WPIBinaryImage rawBinWpi = DaisyExtensions.makeWPIBinaryImage(bin);
+        WPIBinaryImage rawBinWpi = null;
+        if (Robot.getTable().getBoolean("Show Binary")) {
+            rawBinWpi = DaisyExtensions.makeWPIBinaryImage(bin);
+        }
 
         // Fill in any gaps using binary morphology
         opencv_imgproc.cvMorphologyEx(bin, bin, null, morphKernel, opencv_imgproc.CV_MOP_CLOSE, kHoleClosingIterations);
+        if (Robot.getTable().getBoolean("Show Morph")) {
+            rawBinWpi = DaisyExtensions.makeWPIBinaryImage(bin);
+        }
 
         // Uncomment the next two lines to see the image post-morphology
 //        CanvasFrame result2 = new CanvasFrame("morph");
@@ -296,6 +305,9 @@ public class DaisyCVWidget extends WPICameraExtension {
 
         //System.gc();
 
+        if (Robot.getTable().getBoolean("Show Binary") || Robot.getTable().getBoolean("Show Morph")) {
+            return rawBinWpi;
+        }
         return rawImage; 
     }
 
