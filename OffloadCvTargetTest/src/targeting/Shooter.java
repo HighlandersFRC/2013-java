@@ -103,7 +103,7 @@ public class Shooter extends IterativeRobot {
         SmartDashboard.putNumber("Heading", baseGyro.getAngle());
         SmartDashboard.putData("ArmGyro", armgyro);
         SmartDashboard.putNumber("Drift Coefficient", -0.028);
-        SmartDashboard.putNumber("Launch Power", 55);
+        SmartDashboard.putNumber("Launch Power", 40);
         SmartDashboard.putNumber("Injector Power", 100);
         SmartDashboard.putNumber("Injector Pulse Delay", 0.140);
         SmartDashboard.putNumber("Launcher Pulse Delay", 0);
@@ -113,7 +113,8 @@ public class Shooter extends IterativeRobot {
         SmartDashboard.putNumber("Launcher Pulse Length", 0.25);
         SmartDashboard.putNumber("Indexer Delay", 0.1);
         SmartDashboard.putNumber("Indexer Time", 1.3);
-        SmartDashboard.putNumber("SpinUp Time", 0.15);
+        SmartDashboard.putNumber("SpinUp Time", 0.6);
+        SmartDashboard.putBoolean("LaunchWheel Ready", false);
         SmartDashboard.putNumber("Articulator Power", 100);
         double voltage = DriverStation.getInstance().getBatteryVoltage();
         //magic code to calculate percent charge from voltage. formula given by quartic regression on empirical data. DO NOT TOUCH
@@ -168,13 +169,16 @@ public class Shooter extends IterativeRobot {
             if (joy2.getRawButton(2) && !wheel) {
                 spinUpStartTime = Timer.getFPGATimestamp();
                 launch.set(1);
+                wheel = true;
             } else if (joy2.getRawButton(2) && Timer.getFPGATimestamp() < spinUpStartTime + SmartDashboard.getNumber("SpinUp Time")) {
                 launch.set(1);
             } else if (joy2.getRawButton(2) && wheel) {
                 launch.set(launchPwr);
+                SmartDashboard.putBoolean("LaunchWheel Ready", true);
             } else {
                 wheel = false;
                 launch.set(0);
+                SmartDashboard.putBoolean("LaunchWheel Ready", false);
             }
             if (joy2.getRawButton(8)) {
                 injector.set(0.25);
@@ -239,7 +243,7 @@ public class Shooter extends IterativeRobot {
         boolean found = SmartDashboard.getBoolean("found");
         if (joy1.getRawButton(1) && !yawTargetingPid.isEnable()) {
             yawTargetingPid.enable();
-        } else if (yawTargetingPid.isEnable()) {
+        } else if (!joy1.getRawButton(1) && yawTargetingPid.isEnable()) {
             yawTargetingPid.disable();
         }
     }
