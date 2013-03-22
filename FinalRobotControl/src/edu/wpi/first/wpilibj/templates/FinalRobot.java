@@ -16,11 +16,14 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.PIDOutput;
+import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.tables.TableKeyNotDefinedException;
@@ -34,7 +37,7 @@ import edu.wpi.first.wpilibj.tables.TableKeyNotDefinedException;
  */
 public class FinalRobot extends IterativeRobot {
 
-    Gyro gyro = new Gyro(1);
+//    Gyro gyro = new Gyro(1);
     boolean driver = true;
     boolean driveLock = false;
     double gunnerX;
@@ -70,17 +73,37 @@ public class FinalRobot extends IterativeRobot {
     boolean defaultPistonState;
     double autoStartTime;
     int autoState = 0;
+    double lastPidTurn = 0;
+    double spinUpStartTime;
+    Gyro armgyro = new Gyro(1);
+    Gyro baseGyro = new Gyro(2);
     Servo indexer = new Servo(7);
     Jaguar articulator = new Jaguar(8);
     DigitalInput limitSwitch = new DigitalInput(2);
     SendableChooser autoChooser = new SendableChooser();
-    PIDController armpid = new PIDController(1, 1, 1, gyro, arm2);
+//    PIDController armpid = new PIDController(1, 1, 1, gyro, arm2);
+    PIDController yawTargetingPid = new PIDController(0.04, 0.01, 0.01, baseGyro, new ImageTrackingPidOutput());
+    PIDController armElevationPid = new PIDController(1, 0.05, 0.8, new ElevationTargeterSource(), articulator);
     Preferences pref = Preferences.getInstance();
     Object autoMode;
 
+    public class ImageTrackingPidOutput implements PIDOutput {
+
+        public void pidWrite(double output) {
+            lastPidTurn = output;
+        }
+    }
+
+    public class ElevationTargeterSource implements PIDSource {
+
+        public double pidGet() {
+            return armgyro.getAngle() - Timer.getFPGATimestamp() * SmartDashboard.getNumber("Drift Coefficient");
+        }
+    }
+
     {
-        armpid.setInputRange(-180, 180);
-        armpid.setOutputRange(-1, 1);
+//        armpid.setInputRange(-180, 180);
+//        armpid.setOutputRange(-1, 1);
         autoChooser.addDefault("None", null);
         autoChooser.addObject("Behind Pyramid", new Double(-4));
         autoChooser.addObject("Back Corner Of Pyramid", new Double(-3));
@@ -89,6 +112,8 @@ public class FinalRobot extends IterativeRobot {
 
     public void robotInit() {
 //        drive.setSafetyEnabled(false);
+        armgyro.reset();
+        baseGyro.reset();
         drive.setInvertedMotor(RobotDrive.MotorType.kFrontRight, true);
         drive.setInvertedMotor(RobotDrive.MotorType.kRearRight, true);
         System.out.println("init");
@@ -104,26 +129,37 @@ public class FinalRobot extends IterativeRobot {
         SmartDashboard.putNumber("Articulator Power", 50);
         SmartDashboard.putNumber("Shoulder Power", 100);
         SmartDashboard.putNumber("Belt Power", 100);
-        SmartDashboard.putNumber("kP", pref.getDouble("kp", 0.01));
-        SmartDashboard.putNumber("kI", pref.getDouble("kI", 0));
-        SmartDashboard.putNumber("kD", pref.getDouble("kD", 0));
+//        SmartDashboard.putNumber("kP", pref.getDouble("kp", 0.01));
+//        SmartDashboard.putNumber("kI", pref.getDouble("kI", 0));
+//        SmartDashboard.putNumber("kD", pref.getDouble("kD", 0));
         SmartDashboard.putNumber("Indexer Delay", 0.1);
         SmartDashboard.putNumber("Indexer Time", 1.3);
+        SmartDashboard.putNumber("SpinUp Time", 0.6);
         SmartDashboard.putData("autoChooser", autoChooser);
+        SmartDashboard.putString("Test Table/Test Field", "Test Value");
         double voltage = DriverStation.getInstance().getBatteryVoltage();
         //magic code to calculate percent charge from voltage. formula given by quartic regression on empirical data. DO NOT TOUCH
         //DO NOT TOUCH NEXT LINE
         SmartDashboard.putNumber(" initial charge percent", (voltage > 11.7 ? (voltage < 12.6 ? 337.90418311119 * MathUtils.pow(voltage, 4) - 16321.796968975 * MathUtils.pow(voltage, 3) + 295645.26274574 * MathUtils.pow(voltage, 2) - 2379991.6548433 * voltage + 7184291.5749442 : 125) : -10));
         //DO NOT TOUCH PREVIOUS LINE
+        yawTargetingPid.setSetpoint(0);
+        yawTargetingPid.setInputRange(0, 360);
+        yawTargetingPid.setContinuous(true);
+        yawTargetingPid.setOutputRange(-0.3, 0.3);
+        armElevationPid.setInputRange(-30, 5);
+        armElevationPid.setOutputRange(-0.6, 0.6);
+        SmartDashboard.putData("YawTargeter PID", yawTargetingPid);
+        SmartDashboard.putData("ElevationTargeting PID", armElevationPid);
+        System.out.println(NetworkTable.getTable("SmartDashboard").containsSubTable("Test Table"));
     }
 
     public void autonomousInit() {
         wheel = true;
-        armpid.setPID(SmartDashboard.getNumber("kP"), SmartDashboard.getNumber("kI"), SmartDashboard.getNumber("kD"));
+//        armpid.setPID(SmartDashboard.getNumber("kP"), SmartDashboard.getNumber("kI"), SmartDashboard.getNumber("kD"));
         autoMode = autoChooser.getSelected();
         if (autoMode != null) {
-            armpid.setSetpoint(((Double) autoMode).doubleValue());
-            armpid.enable();
+//            armpid.setSetpoint(((Double) autoMode).doubleValue());
+//            armpid.enable();
         }
     }
 
@@ -213,10 +249,12 @@ public class FinalRobot extends IterativeRobot {
 //        } else if (driveLock && !joy1.getRawButton(9)) {
 //            driveLock = false;
 //        }
+        SmartDashboard.putNumber("Heading", baseGyro.getAngle());
+        yawTargetingPid.setSetpoint(SmartDashboard.getNumber("azimuth"));
         if (driver) {
 //            System.out.println("trigger");
 //            absCtrlMode.set(joy1.getRawButton(8));
-            drive.mecanumDrive_Cartesian(joy2.getX(), -joy2.getY(), joy1.getX(), absCtrlMode.getValue() ? gyro.getAngle() : 0);
+            drive.mecanumDrive_Cartesian(joy2.getX(), -joy2.getY(), joy1.getRawButton(1) ? lastPidTurn : joy1.getX(), absCtrlMode.getValue() ? baseGyro.getAngle() : 0);
         } else {
             if (joy2.getRawButton(4) && !joy2.getRawButton(5)) {
                 gunnerX = -0.3;
@@ -233,19 +271,19 @@ public class FinalRobot extends IterativeRobot {
                 gunnerY = 0;
             }
             heading += joy2.getAxis(Joystick.AxisType.kX);
-            drive.mecanumDrive_Cartesian(gunnerX, gunnerY, (-gyro.getAngle() + heading) / 20, 0);
+            drive.mecanumDrive_Cartesian(gunnerX, gunnerY, (-baseGyro.getAngle() + heading) / 20, 0);
         }
         if (joy3.getRawButton(11)) {
-            arm.set(-SmartDashboard.getNumber("Belt Power") / 100);
+            arm.set(-SmartDashboard.getNumber("Shoulder Power") / 100);
         } else if (joy3.getRawButton(10)) {
-            arm.set(SmartDashboard.getNumber("Belt Power") / 100);
+            arm.set(SmartDashboard.getNumber("Shoulder Power") / 100);
         } else {
             arm.set(0);
         }
         if (joy3.getRawButton(6) /*|| joy2.getRawButton(3)*/) {
-            arm2.set(SmartDashboard.getNumber("Shoulder Power") / 100);
+            arm2.set(SmartDashboard.getNumber("Belt Power") / 100);
         } else if (joy3.getRawButton(7)/* || joy2.getRawButton(2)*/) {
-            arm2.set(-SmartDashboard.getNumber("Shoulder Power") / 100);
+            arm2.set(-SmartDashboard.getNumber("Belt Power") / 100);
         } else {
             arm2.set(0);
         }
@@ -253,10 +291,19 @@ public class FinalRobot extends IterativeRobot {
             launchPwr = SmartDashboard.getNumber("Launch Power") / 100;
             injPwr = SmartDashboard.getNumber("Injector Power") / 100;
         }
-        if (joy2.getRawButton(2)) {
+        if (joy2.getRawButton(2) && !wheel) {
+            spinUpStartTime = Timer.getFPGATimestamp();
+            launch.set(1);
             wheel = true;
+        } else if (joy2.getRawButton(2) && Timer.getFPGATimestamp() < spinUpStartTime + SmartDashboard.getNumber("SpinUp Time")) {
+            launch.set(1);
+        } else if (joy2.getRawButton(2) && wheel) {
+            launch.set(launchPwr);
+            SmartDashboard.putBoolean("LaunchWheel Ready", true);
         } else {
             wheel = false;
+            launch.set(0);
+            SmartDashboard.putBoolean("LaunchWheel Ready", false);
         }
         iterateFiring();
 //        if (joy1.getRawButton(10)) {
@@ -265,6 +312,11 @@ public class FinalRobot extends IterativeRobot {
 //        if (joy2.getRawButton(11)) {
 //            comp.start();
 //        }
+        if (joy1.getRawButton(1) && !yawTargetingPid.isEnable()) {
+            yawTargetingPid.enable();
+        } else if (!joy1.getRawButton(1) && yawTargetingPid.isEnable()) {
+            yawTargetingPid.disable();
+        }
     }
 
     public void testInit() {
@@ -286,11 +338,6 @@ public class FinalRobot extends IterativeRobot {
     }
 
     private void iterateFiring() throws TableKeyNotDefinedException {
-        if (wheel && !fireControl) {
-            launch.set(launchPwr);
-        } else if (!fireControl) {
-            launch.set(0);
-        }
         if (joy2.getRawButton(9)) {
             indexer.set(0);
         } else if (joy2.getRawButton(10)) {
@@ -299,12 +346,15 @@ public class FinalRobot extends IterativeRobot {
             indexer.set(0.5);
         }
         if (!fireControl) {
-            if (joy2.getRawButton(11)) {
-                articulator.set(SmartDashboard.getNumber("Articulator Power") / 100);
-            } else if (joy2.getRawButton(12)) {
-                articulator.set(-SmartDashboard.getNumber("Articulator Power") / 100);
-            } else {
-                articulator.set(0);
+
+            if (!armElevationPid.isEnable()) {
+                if (joy2.getRawButton(11)) {
+                    articulator.set(SmartDashboard.getNumber("Articulator Power") / 100);
+                } else if (joy2.getRawButton(12)) {
+                    articulator.set(-SmartDashboard.getNumber("Articulator Power") / 100);
+                } else {
+                    articulator.set(0);
+                }
             }
             if (joy2.getRawButton(8)) {
                 injector.set(0.25);
@@ -362,7 +412,7 @@ public class FinalRobot extends IterativeRobot {
             } else {
                 indexer.set(0.5);
             }
-            if (fireTime >= Math.max(Math.max(injPulseDel + injPulseLen, launchPulseDel + launchPulseLen), indexerDel+indexerLen)) {
+            if (fireTime >= Math.max(Math.max(injPulseDel + injPulseLen, launchPulseDel + launchPulseLen), indexerDel + indexerLen)) {
                 if (!joy1.getRawButton(1)) {
                     fireControl = false;
                     injector.set(0);
