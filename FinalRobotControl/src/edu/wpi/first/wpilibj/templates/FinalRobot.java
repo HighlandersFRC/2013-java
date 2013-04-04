@@ -50,6 +50,7 @@ public class FinalRobot extends IterativeRobot {
     Joystick joy1 = new Joystick(1);
     Joystick joy2 = new Joystick(2);
     Joystick joy3 = new Joystick(3);
+    Joystick joy4 = new Joystick(4);
     Victor launch = new Victor(5);
     Victor injector = new Victor(6);
 //    Compressor comp = new Compressor(1, 1);
@@ -111,7 +112,7 @@ public class FinalRobot extends IterativeRobot {
     }
 
     public void robotInit() {
-//        drive.setSafetyEnabled(false);
+        drive.setSafetyEnabled(false);
         armgyro.reset();
         baseGyro.reset();
         drive.setInvertedMotor(RobotDrive.MotorType.kFrontRight, true);
@@ -136,6 +137,7 @@ public class FinalRobot extends IterativeRobot {
         SmartDashboard.putNumber("Indexer Time", 1.3);
         SmartDashboard.putNumber("SpinUp Time", 0.6);
         SmartDashboard.putData("autoChooser", autoChooser);
+        SmartDashboard.putNumber("azimuth", 0);
         SmartDashboard.putString("Test Table/Test Field", "Test Value");
         double voltage = DriverStation.getInstance().getBatteryVoltage();
         //magic code to calculate percent charge from voltage. formula given by quartic regression on empirical data. DO NOT TOUCH
@@ -254,7 +256,7 @@ public class FinalRobot extends IterativeRobot {
         if (driver) {
 //            System.out.println("trigger");
 //            absCtrlMode.set(joy1.getRawButton(8));
-            drive.mecanumDrive_Cartesian(joy2.getX(), -joy2.getY(), joy1.getRawButton(1) ? lastPidTurn : joy1.getX(), absCtrlMode.getValue() ? baseGyro.getAngle() : 0);
+            drive.mecanumDrive_Cartesian(joy2.getX(), joy2.getY(), joy1.getRawButton(1) ? lastPidTurn : joy1.getX(), absCtrlMode.getValue() ? baseGyro.getAngle() : 0);
         } else {
             if (joy2.getRawButton(4) && !joy2.getRawButton(5)) {
                 gunnerX = -0.3;
@@ -278,7 +280,7 @@ public class FinalRobot extends IterativeRobot {
         } else if (joy3.getRawButton(10)) {
             arm.set(SmartDashboard.getNumber("Shoulder Power") / 100);
         } else {
-            arm.set(0);
+            arm.set(joy4.getAxis(Joystick.AxisType.kX));
         }
         if (joy3.getRawButton(6) /*|| joy2.getRawButton(3)*/) {
             arm2.set(SmartDashboard.getNumber("Belt Power") / 100);
@@ -288,15 +290,15 @@ public class FinalRobot extends IterativeRobot {
             arm2.set(0);
         }
         if (!fireControl) {
-            launchPwr = SmartDashboard.getNumber("Launch Power") / 100;
+            launchPwr = -SmartDashboard.getNumber("Launch Power") / 100;
             injPwr = SmartDashboard.getNumber("Injector Power") / 100;
         }
         if (joy2.getRawButton(2) && !wheel) {
             spinUpStartTime = Timer.getFPGATimestamp();
-            launch.set(1);
+            launch.set(-1);
             wheel = true;
         } else if (joy2.getRawButton(2) && Timer.getFPGATimestamp() < spinUpStartTime + SmartDashboard.getNumber("SpinUp Time")) {
-            launch.set(1);
+            launch.set(-1);
         } else if (joy2.getRawButton(2) && wheel) {
             launch.set(launchPwr);
             SmartDashboard.putBoolean("LaunchWheel Ready", true);
@@ -338,13 +340,6 @@ public class FinalRobot extends IterativeRobot {
     }
 
     private void iterateFiring() throws TableKeyNotDefinedException {
-        if (joy2.getRawButton(9)) {
-            indexer.set(0);
-        } else if (joy2.getRawButton(10)) {
-            indexer.set(1);
-        } else {
-            indexer.set(0.5);
-        }
         if (!fireControl) {
 
             if (!armElevationPid.isEnable()) {
@@ -355,6 +350,13 @@ public class FinalRobot extends IterativeRobot {
                 } else {
                     articulator.set(0);
                 }
+            }
+            if (joy2.getRawButton(9)) {
+                indexer.set(0);
+            } else if (joy2.getRawButton(10)) {
+                indexer.set(1);
+            } else {
+                indexer.set(0.5);
             }
             if (joy2.getRawButton(8)) {
                 injector.set(0.25);
@@ -368,10 +370,10 @@ public class FinalRobot extends IterativeRobot {
             }
         }
         if (joy2.getRawButton(1) && !fireControl || fireControl && !firing) {
-            launchPwr = SmartDashboard.getNumber("Launch Power") / 100;
+            launchPwr = -SmartDashboard.getNumber("Launch Power") / 100;
             injPwr = SmartDashboard.getNumber("Injector Power") / 100;
             injPulsePwr = SmartDashboard.getNumber("Injector Pulse Power") / 100;
-            launchPulsePwr = SmartDashboard.getNumber("Launcher Pulse Power") / 100;
+            launchPulsePwr = -SmartDashboard.getNumber("Launcher Pulse Power") / 100;
             injPulseLen = SmartDashboard.getNumber("Injector Pulse Length");
             launchPulseLen = SmartDashboard.getNumber("Launcher Pulse Length");
             injPulseDel = SmartDashboard.getNumber("Injector Pulse Delay");
