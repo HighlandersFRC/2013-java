@@ -133,8 +133,8 @@ public class FinalRobot extends IterativeRobot {
 //        SmartDashboard.putNumber("kP", pref.getDouble("kp", 0.01));
 //        SmartDashboard.putNumber("kI", pref.getDouble("kI", 0));
 //        SmartDashboard.putNumber("kD", pref.getDouble("kD", 0));
-        SmartDashboard.putNumber("Indexer Delay", 0.1);
-        SmartDashboard.putNumber("Indexer Time", 1.3);
+        SmartDashboard.putNumber("Indexer Delay", 0);
+        SmartDashboard.putNumber("Indexer Time", 1.5);
         SmartDashboard.putNumber("SpinUp Time", 0.6);
         SmartDashboard.putData("autoChooser", autoChooser);
         SmartDashboard.putNumber("azimuth", 0);
@@ -232,7 +232,7 @@ public class FinalRobot extends IterativeRobot {
          *      The CV widget can be used to aim if the camera is mounted.
          *      We (of the programming team) can add/change controls at request
          *          however, we will endeavor to minimize control changes otherwise.
-         *          if we must change the controls we will notify people if feasible.
+         *          if we must change the controls we will notify people.
          */
 //        System.out.println("Joystick: (" + joy1.getX()+", "+joy1.getY()+", "+joy2.getX()+")");
 //        System.out.println(accel.getAccelerations());
@@ -280,7 +280,7 @@ public class FinalRobot extends IterativeRobot {
         } else if (joy3.getRawButton(10)) {
             arm.set(SmartDashboard.getNumber("Shoulder Power") / 100);
         } else {
-            arm.set(joy4.getAxis(Joystick.AxisType.kX));
+            arm.set(joy4.getAxis(Joystick.AxisType.kY));
         }
         if (joy3.getRawButton(6) /*|| joy2.getRawButton(3)*/) {
             arm2.set(SmartDashboard.getNumber("Belt Power") / 100);
@@ -293,13 +293,13 @@ public class FinalRobot extends IterativeRobot {
             launchPwr = -SmartDashboard.getNumber("Launch Power") / 100;
             injPwr = SmartDashboard.getNumber("Injector Power") / 100;
         }
-        if (joy2.getRawButton(2) && !wheel) {
+        if ((joy2.getRawButton(2) || joy4.getRawButton(2)) && !wheel) {
             spinUpStartTime = Timer.getFPGATimestamp();
             launch.set(-1);
             wheel = true;
-        } else if (joy2.getRawButton(2) && Timer.getFPGATimestamp() < spinUpStartTime + SmartDashboard.getNumber("SpinUp Time")) {
+        } else if ((joy2.getRawButton(2) || joy4.getRawButton(2)) && Timer.getFPGATimestamp() < spinUpStartTime + SmartDashboard.getNumber("SpinUp Time")) {
             launch.set(-1);
-        } else if (joy2.getRawButton(2) && wheel) {
+        } else if ((joy2.getRawButton(2) || joy4.getRawButton(2)) && wheel) {
             launch.set(launchPwr);
             SmartDashboard.putBoolean("LaunchWheel Ready", true);
         } else {
@@ -322,10 +322,6 @@ public class FinalRobot extends IterativeRobot {
     }
 
     public void testInit() {
-        pref.putDouble("kP", SmartDashboard.getNumber("kP", 1));
-        pref.putDouble("kI", SmartDashboard.getNumber("kI", 1));
-        pref.putDouble("kD", SmartDashboard.getNumber("kD", 1));
-        pref.save();
     }
 
     /**
@@ -343,7 +339,7 @@ public class FinalRobot extends IterativeRobot {
         if (!fireControl) {
 
             if (!armElevationPid.isEnable()) {
-                if (joy2.getRawButton(11)) {
+                if (joy2.getRawButton(11) || joy4.getRawButton(11)) {
                     articulator.set(SmartDashboard.getNumber("Articulator Power") / 100);
                 } else if (joy2.getRawButton(12)) {
                     articulator.set(-SmartDashboard.getNumber("Articulator Power") / 100);
@@ -351,17 +347,17 @@ public class FinalRobot extends IterativeRobot {
                     articulator.set(0);
                 }
             }
-            if (joy2.getRawButton(9)) {
+            if (joy2.getRawButton(9) || joy4.getRawButton(9)) {
                 indexer.set(0);
-            } else if (joy2.getRawButton(10)) {
+            } else if (joy2.getRawButton(10) || joy4.getRawButton(10)) {
                 indexer.set(1);
             } else {
                 indexer.set(0.5);
             }
-            if (joy2.getRawButton(8)) {
+            if (joy2.getRawButton(8) || joy4.getRawButton(8)) {
                 injector.set(0.25);
 //                System.out.println("fwd");
-            } else if (joy2.getRawButton(7)) {
+            } else if (joy2.getRawButton(7) || joy4.getRawButton(7)) {
                 injector.set(-0.25);
 //                System.out.println("back");
             } else {
@@ -369,7 +365,7 @@ public class FinalRobot extends IterativeRobot {
 //                System.out.println("off");
             }
         }
-        if (joy2.getRawButton(1) && !fireControl || fireControl && !firing) {
+        if ((joy2.getRawButton(1) || joy4.getRawButton(1)) && !fireControl || fireControl && !firing) {
             launchPwr = -SmartDashboard.getNumber("Launch Power") / 100;
             injPwr = SmartDashboard.getNumber("Injector Power") / 100;
             injPulsePwr = SmartDashboard.getNumber("Injector Pulse Power") / 100;
@@ -387,7 +383,7 @@ public class FinalRobot extends IterativeRobot {
             firing = true;
             fireStartTime = Timer.getFPGATimestamp() + (defaultPistonState ? feedTime : 0);
         }
-        if (fireControl && joy2.getRawButton(2)) {
+        if (fireControl) {
 //                System.out.println("firing");
             double currTime = Timer.getFPGATimestamp();
             double fireTime = currTime - fireStartTime;
@@ -415,17 +411,13 @@ public class FinalRobot extends IterativeRobot {
                 indexer.set(0.5);
             }
             if (fireTime >= Math.max(Math.max(injPulseDel + injPulseLen, launchPulseDel + launchPulseLen), indexerDel + indexerLen)) {
-                if (!joy1.getRawButton(1)) {
+                if (!(joy2.getRawButton(1) || joy4.getRawButton(1))) {
                     fireControl = false;
                     injector.set(0);
                     firing = false;
 //                        feed.set(DoubleSolenoid.Value.kOff);
                 }
             }
-        }
-        if (!joy2.getRawButton(2)) {
-            launch.set(0);
-            injector.set(0);
         }
     }
 }
