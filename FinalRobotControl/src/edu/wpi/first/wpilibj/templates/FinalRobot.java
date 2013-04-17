@@ -7,9 +7,7 @@
 package edu.wpi.first.wpilibj.templates;
 
 import com.sun.squawk.util.MathUtils;
-import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Gyro;
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -21,6 +19,7 @@ import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
@@ -37,7 +36,6 @@ import edu.wpi.first.wpilibj.tables.TableKeyNotDefinedException;
  */
 public class FinalRobot extends IterativeRobot {
 
-//    Gyro gyro = new Gyro(1);
     boolean driver = true;
     boolean driveLock = false;
     double gunnerX;
@@ -53,8 +51,6 @@ public class FinalRobot extends IterativeRobot {
     Joystick joy4 = new Joystick(4);
     Victor launch = new Victor(5);
     Victor injector = new Victor(6);
-//    Compressor comp = new Compressor(1, 1);
-//    DoubleSolenoid feed = new DoubleSolenoid(1, 2);
     boolean wheel = false;
     LatchedBoolean hoppercontrol = new LatchedBoolean();
     boolean fireControl = false;
@@ -73,7 +69,7 @@ public class FinalRobot extends IterativeRobot {
     double indexerDel;
     boolean defaultPistonState;
     double autoStartTime;
-    int autoState = 0;
+    int autoState = -1;
     double lastPidTurn = 0;
     double spinUpStartTime;
     Gyro armgyro = new Gyro(1);
@@ -81,10 +77,12 @@ public class FinalRobot extends IterativeRobot {
     Servo indexer = new Servo(7);
     Jaguar articulator = new Jaguar(8);
     DigitalInput limitSwitch = new DigitalInput(2);
+    DigitalInput articulatorLimit = new DigitalInput(3);
     SendableChooser autoChooser = new SendableChooser();
-//    PIDController armpid = new PIDController(1, 1, 1, gyro, arm2);
     PIDController yawTargetingPid = new PIDController(0.04, 0.01, 0.01, baseGyro, new ImageTrackingPidOutput());
     PIDController armElevationPid = new PIDController(1, 0.05, 0.8, new ElevationTargeterSource(), articulator);
+    Solenoid armLock = new Solenoid(1);
+    boolean armReleased = false;
     Preferences pref = Preferences.getInstance();
     Object autoMode;
 
@@ -103,8 +101,6 @@ public class FinalRobot extends IterativeRobot {
     }
 
     {
-//        armpid.setInputRange(-180, 180);
-//        armpid.setOutputRange(-1, 1);
         autoChooser.addDefault("None", null);
         autoChooser.addObject("Behind Pyramid", new Double(-4));
         autoChooser.addObject("Back Corner Of Pyramid", new Double(-3));
@@ -119,26 +115,23 @@ public class FinalRobot extends IterativeRobot {
         drive.setInvertedMotor(RobotDrive.MotorType.kRearRight, true);
         System.out.println("init");
         SmartDashboard.putNumber("Launch Power", 55);
-        SmartDashboard.putNumber("Injector Power", 100);
-        SmartDashboard.putNumber("Injector Pulse Delay", 0.14);
+        SmartDashboard.putNumber("Injector Power", -100);
+        SmartDashboard.putNumber("Injector Pulse Delay", 0.2);
         SmartDashboard.putNumber("Launcher Pulse Delay", 0);
-        SmartDashboard.putNumber("Injector Pulse Power", -25);
+        SmartDashboard.putNumber("Injector Pulse Power", 25);
         SmartDashboard.putNumber("Launcher Pulse Power", 100);
-        SmartDashboard.putNumber("Injector Pulse Length", 0.5);
+        SmartDashboard.putNumber("Injector Pulse Length", 0.8);
         SmartDashboard.putNumber("Launcher Pulse Length", 0.25);
-        SmartDashboard.putNumber("Piston Extension Time", 0.75);
         SmartDashboard.putNumber("Articulator Power", 50);
         SmartDashboard.putNumber("Shoulder Power", 100);
         SmartDashboard.putNumber("Belt Power", 100);
-//        SmartDashboard.putNumber("kP", pref.getDouble("kp", 0.01));
-//        SmartDashboard.putNumber("kI", pref.getDouble("kI", 0));
-//        SmartDashboard.putNumber("kD", pref.getDouble("kD", 0));
         SmartDashboard.putNumber("Indexer Delay", 0);
-        SmartDashboard.putNumber("Indexer Time", 1.5);
+        SmartDashboard.putNumber("Indexer Time", 1);
         SmartDashboard.putNumber("SpinUp Time", 0.6);
         SmartDashboard.putData("autoChooser", autoChooser);
         SmartDashboard.putNumber("azimuth", 0);
         SmartDashboard.putString("Test Table/Test Field", "Test Value");
+        SmartDashboard.putBoolean("autonomous", true);
         double voltage = DriverStation.getInstance().getBatteryVoltage();
         //magic code to calculate percent charge from voltage. formula given by quartic regression on empirical data. DO NOT TOUCH
         //DO NOT TOUCH NEXT LINE
@@ -156,12 +149,16 @@ public class FinalRobot extends IterativeRobot {
     }
 
     public void autonomousInit() {
-        wheel = true;
-//        armpid.setPID(SmartDashboard.getNumber("kP"), SmartDashboard.getNumber("kI"), SmartDashboard.getNumber("kD"));
+        launchPwr = -SmartDashboard.getNumber("Launch Power") / 100;
+        autoState = -1;
+        autoStartTime = Timer.getFPGATimestamp();
         autoMode = autoChooser.getSelected();
-        if (autoMode != null) {
-//            armpid.setSetpoint(((Double) autoMode).doubleValue());
-//            armpid.enable();
+        if (SmartDashboard.getBoolean("autonomous")) {
+            wheel = true;
+            launch.set(-1);
+            injector.set(0.25);
+        } else {
+            launch.set(0);
         }
     }
 
@@ -169,18 +166,29 @@ public class FinalRobot extends IterativeRobot {
      * This function is called periodically during autonomous
      */
     public void autonomousPeriodic() {
-        if (autoMode != null) {
+        if (SmartDashboard.getBoolean("autonomous")) {
             iterateFiring();
-            if (Timer.getFPGATimestamp() - autoStartTime > 5 && autoState == 0) {
-                autoState = 1;
-                fireControl = true;
+            if (Timer.getFPGATimestamp() - autoStartTime > 0.6 && autoState == -1) {
+                launch.set(-SmartDashboard.getNumber("Launch Power") / 100);
+                autoState = 0;
             }
-            if (Timer.getFPGATimestamp() - autoStartTime > 8.5 && autoState == 1) {
+            if (autoState == 0) {
+                injector.set(0.25);
+            }
+            if (limitSwitch.get() && autoState == 0) {
+                autoState = 1;
+                injector.set(0);
+            }
+            if (Timer.getFPGATimestamp() - autoStartTime > 5 && autoState == 1) {
                 autoState = 2;
                 fireControl = true;
             }
-            if (Timer.getFPGATimestamp() - autoStartTime > 11 && autoState == 2) {
+            if (Timer.getFPGATimestamp() - autoStartTime > 9 && autoState == 2) {
                 autoState = 3;
+                fireControl = true;
+            }
+            if (Timer.getFPGATimestamp() - autoStartTime > 13 && autoState == 3) {
+                autoState = 4;
                 fireControl = true;
             }
         }
@@ -234,29 +242,11 @@ public class FinalRobot extends IterativeRobot {
          *          however, we will endeavor to minimize control changes otherwise.
          *          if we must change the controls we will notify people.
          */
-//        System.out.println("Joystick: (" + joy1.getX()+", "+joy1.getY()+", "+joy2.getX()+")");
-//        System.out.println(accel.getAccelerations());
-//        System.out.println("test");
-//        System.out.println("(" + accel.getAcceleration(Axes.kX) + ", " + accel.getAcceleration(Axes.kY) + ", " + accel.getAcceleration(Axes.kZ) + ", " + gyro.getAngle() + ")");
 
-//        if (!driveLock && joy1.getRawButton(9)) {
-////            System.out.println(driver);
-////            driver = !driver;
-//            driveLock = true;
-////            System.out.println("driver: "+driver+" "+!driver);
-//            if (driver == false) {
-//                heading = gyro.getAngle();
-//            }
-////            System.out.println("toggle: " + driver);
-//        } else if (driveLock && !joy1.getRawButton(9)) {
-//            driveLock = false;
-//        }
         SmartDashboard.putNumber("Heading", baseGyro.getAngle());
         yawTargetingPid.setSetpoint(SmartDashboard.getNumber("azimuth"));
         if (driver) {
-//            System.out.println("trigger");
-//            absCtrlMode.set(joy1.getRawButton(8));
-            drive.mecanumDrive_Cartesian(joy2.getX(), joy2.getY(), joy1.getRawButton(1) ? lastPidTurn : joy1.getX(), absCtrlMode.getValue() ? baseGyro.getAngle() : 0);
+            drive.mecanumDrive_Cartesian(-joy2.getX(), -joy2.getY(), joy1.getRawButton(1) ? lastPidTurn : joy1.getX(), absCtrlMode.getValue() ? baseGyro.getAngle() : 0);
         } else {
             if (joy2.getRawButton(4) && !joy2.getRawButton(5)) {
                 gunnerX = -0.3;
@@ -275,16 +265,22 @@ public class FinalRobot extends IterativeRobot {
             heading += joy2.getAxis(Joystick.AxisType.kX);
             drive.mecanumDrive_Cartesian(gunnerX, gunnerY, (-baseGyro.getAngle() + heading) / 20, 0);
         }
-        if (joy3.getRawButton(11)) {
-            arm.set(-SmartDashboard.getNumber("Shoulder Power") / 100);
-        } else if (joy3.getRawButton(10)) {
-            arm.set(SmartDashboard.getNumber("Shoulder Power") / 100);
-        } else {
-            arm.set(joy4.getAxis(Joystick.AxisType.kY));
+        if (armReleased) {
+            if (joy3.getRawButton(11)) {
+                arm.set(-SmartDashboard.getNumber("Shoulder Power") / 100);
+            } else if (joy3.getRawButton(10)) {
+                arm.set(SmartDashboard.getNumber("Shoulder Power") / 100);
+            } else {
+                if (Math.abs(joy4.getY()) > 0.05) {
+                    arm.set(joy4.getAxis(Joystick.AxisType.kY));
+                } else {
+                    arm.set(0);
+                }
+            }
         }
-        if (joy3.getRawButton(6) /*|| joy2.getRawButton(3)*/) {
+        if (joy3.getRawButton(6)) {
             arm2.set(SmartDashboard.getNumber("Belt Power") / 100);
-        } else if (joy3.getRawButton(7)/* || joy2.getRawButton(2)*/) {
+        } else if (joy3.getRawButton(7)) {
             arm2.set(-SmartDashboard.getNumber("Belt Power") / 100);
         } else {
             arm2.set(0);
@@ -308,16 +304,16 @@ public class FinalRobot extends IterativeRobot {
             SmartDashboard.putBoolean("LaunchWheel Ready", false);
         }
         iterateFiring();
-//        if (joy1.getRawButton(10)) {
-//            comp.stop();
-//        }
-//        if (joy2.getRawButton(11)) {
-//            comp.start();
-//        }
         if (joy1.getRawButton(1) && !yawTargetingPid.isEnable()) {
             yawTargetingPid.enable();
         } else if (!joy1.getRawButton(1) && yawTargetingPid.isEnable()) {
             yawTargetingPid.disable();
+        }
+        if (joy3.getRawButton(8) && joy4.getRawButton(9)) {
+            armReleased = true;
+            armLock.set(true);
+        } else {
+            armLock.set(false);
         }
     }
 
@@ -341,7 +337,7 @@ public class FinalRobot extends IterativeRobot {
             if (!armElevationPid.isEnable()) {
                 if (joy2.getRawButton(11) || joy4.getRawButton(11)) {
                     articulator.set(SmartDashboard.getNumber("Articulator Power") / 100);
-                } else if (joy2.getRawButton(12)) {
+                } else if ((joy2.getRawButton(12) || joy4.getRawButton(12)) && !articulatorLimit.get()) {
                     articulator.set(-SmartDashboard.getNumber("Articulator Power") / 100);
                 } else {
                     articulator.set(0);
@@ -356,16 +352,13 @@ public class FinalRobot extends IterativeRobot {
             }
             if (joy2.getRawButton(8) || joy4.getRawButton(8)) {
                 injector.set(0.25);
-//                System.out.println("fwd");
             } else if (joy2.getRawButton(7) || joy4.getRawButton(7)) {
                 injector.set(-0.25);
-//                System.out.println("back");
             } else {
                 injector.set(0);
-//                System.out.println("off");
             }
         }
-        if ((joy2.getRawButton(1) || joy4.getRawButton(1)) && !fireControl || fireControl && !firing) {
+        if ((joy2.getRawButton(1) || joy4.getRawButton(1)) && !fireControl || (fireControl && !firing)) {
             launchPwr = -SmartDashboard.getNumber("Launch Power") / 100;
             injPwr = SmartDashboard.getNumber("Injector Power") / 100;
             injPulsePwr = SmartDashboard.getNumber("Injector Pulse Power") / 100;
@@ -374,21 +367,17 @@ public class FinalRobot extends IterativeRobot {
             launchPulseLen = SmartDashboard.getNumber("Launcher Pulse Length");
             injPulseDel = SmartDashboard.getNumber("Injector Pulse Delay");
             launchPulseDel = SmartDashboard.getNumber("Launcher Pulse Delay");
-            feedTime = SmartDashboard.getNumber("Piston Extension Time");
             indexerDel = SmartDashboard.getNumber("Indexer Delay");
             indexerLen = SmartDashboard.getNumber("Indexer Time");
-//            defaultPistonState = SmartDashboard.getBoolean("Piston Default Extended");
             injector.set(injPwr);
             fireControl = true;
             firing = true;
             fireStartTime = Timer.getFPGATimestamp() + (defaultPistonState ? feedTime : 0);
         }
         if (fireControl) {
-//                System.out.println("firing");
             double currTime = Timer.getFPGATimestamp();
             double fireTime = currTime - fireStartTime;
             if (fireTime >= 0) {
-//                    feed.set(DoubleSolenoid.Value.kForward);
             }
             if (fireTime >= injPulseDel && fireTime < injPulseDel + injPulseLen && !limitSwitch.get()) {
                 injector.set(injPulsePwr);
@@ -403,7 +392,6 @@ public class FinalRobot extends IterativeRobot {
                 launch.set(launchPwr);
             }
             if (fireTime >= feedTime) {
-//                    feed.set(defaultPistonState ? DoubleSolenoid.Value.kOff : DoubleSolenoid.Value.kReverse);
             }
             if (fireTime >= indexerDel && fireTime < indexerDel + indexerLen) {
                 indexer.set(0);
@@ -415,7 +403,6 @@ public class FinalRobot extends IterativeRobot {
                     fireControl = false;
                     injector.set(0);
                     firing = false;
-//                        feed.set(DoubleSolenoid.Value.kOff);
                 }
             }
         }
