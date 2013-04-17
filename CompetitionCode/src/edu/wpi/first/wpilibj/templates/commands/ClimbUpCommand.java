@@ -11,13 +11,13 @@ package edu.wpi.first.wpilibj.templates.commands;
 public class ClimbUpCommand extends CommandBase {
 
     public ClimbUpCommand() {
-        requires(climbArm);
+        requires(climberBelt);
     }
     protected void initialize() {
     }
 
     protected void execute() {
-        climbArm.climbUp();
+        climberBelt.climb(1.0);
     }
 
     protected boolean isFinished() {
@@ -25,6 +25,7 @@ public class ClimbUpCommand extends CommandBase {
     }
 
     protected void end() {
+        climberBelt.climb(0.0);
     }
 
     protected void interrupted() {

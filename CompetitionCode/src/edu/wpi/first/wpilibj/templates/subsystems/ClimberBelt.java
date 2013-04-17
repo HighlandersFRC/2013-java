@@ -4,17 +4,24 @@
  */
 package edu.wpi.first.wpilibj.templates.subsystems;
 
+import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.command.Subsystem;
+import edu.wpi.first.wpilibj.templates.RobotMap;
 
 /**
  *
  * @author alex
  */
-public abstract class ClimberArm extends Subsystem {
-    
+public class ClimberBelt extends Subsystem {
+    private Talon belt = new Talon(RobotMap.climberBelt);
+
     protected void initDefaultCommand() {
     }
-    public abstract void climbUp();
-    public abstract void climbDown();
-    
+
+    public void climb(double pwr) {
+        belt.set(pwr);
+    }
 }
+
+    
+

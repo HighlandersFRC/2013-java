@@ -11,7 +11,7 @@ package edu.wpi.first.wpilibj.templates.commands;
 public class ClimbCommand extends CommandBase {
 
     protected void initialize() {
-        requires(climbArm);
+        requires(climberBelt);
     }
 
     protected void execute() {

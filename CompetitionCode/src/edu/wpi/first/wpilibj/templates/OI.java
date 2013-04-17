@@ -5,8 +5,10 @@ import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.templates.commands.ClimbDownCommand;
 import edu.wpi.first.wpilibj.templates.commands.ClimbUpCommand;
-import edu.wpi.first.wpilibj.templates.commands.PneumaticStartCommand;
-import edu.wpi.first.wpilibj.templates.commands.PneumaticStopCommand;
+import edu.wpi.first.wpilibj.templates.commands.FireCycle;
+import edu.wpi.first.wpilibj.templates.commands.ReleaseArm;
+import edu.wpi.first.wpilibj.templates.commands.StartLaunchMotor;
+import edu.wpi.first.wpilibj.templates.commands.StopLaunchMotor;
 
 /**
  * This class is the glue that binds the controls on the physical operator
@@ -41,21 +43,39 @@ public class OI {
     // button.whenReleased(new ExampleCommand());
     public Joystick joy1 = new Joystick(1);
     public Joystick joy2 = new Joystick(2);
+    public Joystick joy3 = new Joystick(3);
+    public Joystick joy4 = new Joystick(4);
     public Button climbUpButton = new JoystickButton(joy1, 11);
     public Button climbDownButton = new JoystickButton(joy1, 10);
-    public Button startCompButton = new JoystickButton(joy1, 3);
-    public Button stopCompButton = new JoystickButton(joy1, 2);
-    public Button lockonButton = new JoystickButton(joy2, 2);
-    public Button fireButton = new JoystickButton(joy2, 1);
+    public Button releaseArmButton1 = new JoystickButton(joy3, 8);
+    public Button releaseArmButton2 = new JoystickButton(joy4, 9);
+    public Button releaseArmButton = new Button() {
+        public boolean get() {
+            return releaseArmButton1.get() && releaseArmButton2.get();
+        }
+    };
+    public Button lockonButton = new JoystickButton(joy1, 1);
+    public Button startShooterButton1 = new JoystickButton(joy2, 2);
+    public Button startShooterButton2 = new JoystickButton(joy4, 2);
+    public Button startShooterButton = new Button() {
+        public boolean get() {
+            return startShooterButton1.get() || startShooterButton2.get();
+        }
+    };
+    public Button fireButton1 = new JoystickButton(joy2, 1);
+    public Button fireButton2 = new JoystickButton(joy4, 1);
     public JoystickAxis drivex = new JoystickAxis(joy2, Joystick.AxisType.kX.value);
     public JoystickAxis drivey = new JoystickAxis(joy2, Joystick.AxisType.kY.value);
     public JoystickAxis driveTheta = new JoystickAxis(joy1, Joystick.AxisType.kX.value);
-    
+    public JoystickAxis shoulderControl = new JoystickAxis(joy4, Joystick.AxisType.kY.value);
 
     {
         climbUpButton.whenPressed(new ClimbUpCommand());
         climbDownButton.whenPressed(new ClimbDownCommand());
-        startCompButton.whenPressed(new PneumaticStartCommand());
-        stopCompButton.whenPressed(new PneumaticStopCommand());
+        fireButton1.whenPressed(new FireCycle());
+        fireButton2.whenPressed(new FireCycle());
+        startShooterButton.whenPressed(new StartLaunchMotor());
+        startShooterButton.whenReleased(new StopLaunchMotor());
+        releaseArmButton.whenPressed(new ReleaseArm());
     }
 }

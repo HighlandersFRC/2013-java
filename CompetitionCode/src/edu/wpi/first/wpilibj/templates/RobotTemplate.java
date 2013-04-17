@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.templates.commands.CommandBase;
 import edu.wpi.first.wpilibj.templates.commands.ExampleCommand;
 import edu.wpi.first.wpilibj.templates.commands.TeleopDriveCommand;
@@ -27,6 +28,7 @@ public class RobotTemplate extends IterativeRobot {
 
     Command autonomousCommand;
     Command teleopCommand;
+    SendableChooser autonomousSelect;
 
     /**
      * This function is run when the robot is first started up and should be
@@ -34,8 +36,11 @@ public class RobotTemplate extends IterativeRobot {
      */
     public void robotInit() {
         // instantiate the command used for the autonomous period
+        autonomousSelect = new SendableChooser();
         autonomousCommand = new ExampleCommand();
         teleopCommand = new TeleopDriveCommand();
+        autonomousSelect.addDefault("none", null);
+        autonomousSelect.addObject("testAuto", autonomousCommand);
 
         // Initialize all subsystems
         CommandBase.init();
@@ -43,7 +48,10 @@ public class RobotTemplate extends IterativeRobot {
 
     public void autonomousInit() {
         // schedule the autonomous command (example)
-        autonomousCommand.start();
+        Command autonomous = (Command)autonomousSelect.getSelected();
+        if (autonomous != null) {
+            autonomous.start();
+        }
     }
 
     /**
