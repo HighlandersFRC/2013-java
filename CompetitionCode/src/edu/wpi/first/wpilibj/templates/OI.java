@@ -64,10 +64,10 @@ public class OI {
     };
     public Button fireButton1 = new JoystickButton(joy2, 1);
     public Button fireButton2 = new JoystickButton(joy4, 1);
-    public JoystickAxis drivex = new JoystickAxis(joy2, Joystick.AxisType.kX.value);
-    public JoystickAxis drivey = new JoystickAxis(joy2, Joystick.AxisType.kY.value);
-    public JoystickAxis driveTheta = new JoystickAxis(joy1, Joystick.AxisType.kX.value);
-    public JoystickAxis shoulderControl = new JoystickAxis(joy4, Joystick.AxisType.kY.value);
+    public JoystickAxis drivex = new JoystickAxis(joy2, Joystick.AxisType.kX);
+    public JoystickAxis drivey = new JoystickAxis(joy2, Joystick.AxisType.kY);
+    public JoystickAxis driveTheta = new JoystickAxis(joy1, Joystick.AxisType.kX);
+    public JoystickAxis shoulderControl = new JoystickAxis(joy4, Joystick.AxisType.kY);
 
     {
         climbUpButton.whenPressed(new ClimbUpCommand());

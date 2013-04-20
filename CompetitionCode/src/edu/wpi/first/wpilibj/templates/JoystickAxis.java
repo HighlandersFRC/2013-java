@@ -12,13 +12,13 @@ import edu.wpi.first.wpilibj.Joystick;
  */
 public class JoystickAxis {
     private Joystick joy;
-    private int axis;
+    private Joystick.AxisType axis;
 
-    public JoystickAxis(Joystick joy, int axis) {
+    public JoystickAxis(Joystick joy, Joystick.AxisType axis) {
         this.joy = joy;
         this.axis = axis;
     }
     public double get() {
-        return joy.getRawAxis(axis);
+        return joy.getAxis(axis);
     }
 }
