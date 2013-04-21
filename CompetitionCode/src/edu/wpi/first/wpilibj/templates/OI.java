@@ -3,6 +3,7 @@ package edu.wpi.first.wpilibj.templates;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.templates.commands.ArticulateDown;
 import edu.wpi.first.wpilibj.templates.commands.ArticulateUp;
 import edu.wpi.first.wpilibj.templates.commands.ClimbDownCommand;
@@ -48,6 +49,7 @@ public class OI {
     // Start the command when the button is released  and let it run the command
     // until it is finished as determined by it's isFinished method.
     // button.whenReleased(new ExampleCommand());
+    public static Command shoulderCommand = new ReleaseArm();
     public Joystick joy1 = new Joystick(1);
     public Joystick joy2 = new Joystick(2);
     public Joystick joy3 = new Joystick(3);
@@ -93,7 +95,7 @@ public class OI {
         fireButton2.whenPressed(new FireCycle());
         startShooterButton.whenPressed(new StartLaunchMotor());
         startShooterButton.whenReleased(new StopLaunchMotor());
-        releaseArmButton.whenPressed(new ReleaseArm());
+        releaseArmButton.whenPressed(shoulderCommand);
         articulateUpButton1.whenPressed(new ArticulateUp());
         articulateDownButton1.whenPressed(new ArticulateDown());
         articulateUpButton2.whenPressed(new ArticulateUp());

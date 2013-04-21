@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.templates.commands.Autonomous;
 import edu.wpi.first.wpilibj.templates.commands.CommandBase;
-import edu.wpi.first.wpilibj.templates.commands.HoldClimb;
+import edu.wpi.first.wpilibj.templates.commands.ReleaseArm;
 import edu.wpi.first.wpilibj.templates.commands.TeleopDriveCommand;
 
 /**
@@ -80,6 +80,7 @@ public class RobotTemplate extends IterativeRobot {
     public void disabledInit() {
         autonomousCommand.cancel();
         teleopCommand.cancel();
+        OI.shoulderCommand.cancel();
 //        new HoldClimb().start();
     }
     
