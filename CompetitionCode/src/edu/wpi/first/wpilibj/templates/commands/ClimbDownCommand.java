@@ -4,6 +4,8 @@
  */
 package edu.wpi.first.wpilibj.templates.commands;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 /**
  *
  * @author alex
@@ -17,11 +19,11 @@ public class ClimbDownCommand extends CommandBase {
     }
 
     protected void execute() {
-        climberBelt.climb(-1.0);
+        climberBelt.climb(-SmartDashboard.getNumber("Belt Power", 100.0)/100);
     }
 
     protected boolean isFinished() {
-        return true;
+        return !oi.climbDownButton.get();
     }
 
     protected void end() {

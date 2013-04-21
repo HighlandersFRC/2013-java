@@ -4,36 +4,42 @@
  */
 package edu.wpi.first.wpilibj.templates.commands;
 
+import edu.wpi.first.wpilibj.Timer;
+
 /**
  *
  * @author alex
  */
-public class ReleaseArm extends CommandBase {
+public class HoldClimb extends CommandBase {
+    double startTime;
     
-    public ReleaseArm() {
+    public HoldClimb() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
-        requires(climberShoulder);
+        requires(climberBelt);
+        this.setRunWhenDisabled(true);
     }
 
     // Called just before this Command runs the first time
     protected void initialize() {
-        climberShoulder.setLock(false);
+        startTime = Timer.getFPGATimestamp();
+        System.out.println("disabledTest");
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-        climberShoulder.setShoulder(oi.shoulderControl.get());
+        climberBelt.climb(0.25);
+        System.out.println("disabledExecute");
     }
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return false;
+        return Timer.getFPGATimestamp() > startTime + 7.0;
     }
 
     // Called once after isFinished returns true
     protected void end() {
-        climberShoulder.setLock(true);
+        climberBelt.climb(0);
     }
 
     // Called when another command which requires one or more of the same

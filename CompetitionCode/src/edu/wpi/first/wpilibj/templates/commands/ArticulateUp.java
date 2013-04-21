@@ -8,32 +8,31 @@ package edu.wpi.first.wpilibj.templates.commands;
  *
  * @author alex
  */
-public class ReleaseArm extends CommandBase {
+public class ArticulateUp extends CommandBase {
     
-    public ReleaseArm() {
+    public ArticulateUp() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
-        requires(climberShoulder);
+        requires(shooterArticulator);
     }
 
     // Called just before this Command runs the first time
     protected void initialize() {
-        climberShoulder.setLock(false);
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-        climberShoulder.setShoulder(oi.shoulderControl.get());
+        shooterArticulator.articulate(1);
     }
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return false;
+        return !oi.articulateUpButton1.get() && ! oi.articulateUpButton2.get();
     }
 
     // Called once after isFinished returns true
     protected void end() {
-        climberShoulder.setLock(true);
+        shooterArticulator.articulate(0);
     }
 
     // Called when another command which requires one or more of the same

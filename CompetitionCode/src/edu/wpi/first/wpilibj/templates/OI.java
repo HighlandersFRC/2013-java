@@ -3,6 +3,8 @@ package edu.wpi.first.wpilibj.templates;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import edu.wpi.first.wpilibj.templates.commands.ArticulateDown;
+import edu.wpi.first.wpilibj.templates.commands.ArticulateUp;
 import edu.wpi.first.wpilibj.templates.commands.ClimbDownCommand;
 import edu.wpi.first.wpilibj.templates.commands.ClimbUpCommand;
 import edu.wpi.first.wpilibj.templates.commands.FireCycle;
@@ -45,10 +47,14 @@ public class OI {
     public Joystick joy2 = new Joystick(2);
     public Joystick joy3 = new Joystick(3);
     public Joystick joy4 = new Joystick(4);
-    public Button climbUpButton = new JoystickButton(joy1, 11);
-    public Button climbDownButton = new JoystickButton(joy1, 10);
+    public Button climbUpButton = new JoystickButton(joy3, 6);
+    public Button climbDownButton = new JoystickButton(joy3, 7);
+    public Button articulateUpButton1 = new JoystickButton(joy2, 11);
+    public Button articulateDownButton1 = new JoystickButton(joy2, 12);
+    public Button articulateUpButton2 = new JoystickButton(joy4, 11);
+    public Button articulateDownButton2 = new JoystickButton(joy4, 12);
     public Button releaseArmButton1 = new JoystickButton(joy3, 8);
-    public Button releaseArmButton2 = new JoystickButton(joy4, 9);
+    public Button releaseArmButton2 = new JoystickButton(joy3, 9);
     public Button releaseArmButton = new Button() {
         public boolean get() {
             return releaseArmButton1.get() && releaseArmButton2.get();
@@ -77,5 +83,9 @@ public class OI {
         startShooterButton.whenPressed(new StartLaunchMotor());
         startShooterButton.whenReleased(new StopLaunchMotor());
         releaseArmButton.whenPressed(new ReleaseArm());
+        articulateUpButton1.whenPressed(new ArticulateUp());
+        articulateDownButton1.whenPressed(new ArticulateDown());
+        articulateUpButton2.whenPressed(new ArticulateUp());
+        articulateDownButton2.whenPressed(new ArticulateDown());
     }
 }

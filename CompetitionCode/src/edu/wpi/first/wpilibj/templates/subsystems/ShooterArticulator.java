@@ -71,4 +71,14 @@ public class ShooterArticulator extends PIDSubsystem {
             articulator.set(output);
         }
     }
+    public void articulate(double pwr) {
+        pwr = (articulatorReversed?-1:1)*pwr;
+        if (topLimit.get() && false) {
+            articulator.set(Math.min(pwr, 0.0));
+        } else if (bottomLimit.get()&&false) {
+            articulator.set(Math.max(pwr, 0.0));
+        } else {
+            articulator.set(pwr);
+        }
+    }
 }

@@ -26,7 +26,7 @@ public class TeleopDriveCommand extends CommandBase {
             System.out.println("joystickAxis: x,y,theta: " + oi.drivex.get() + " " + oi.drivey.get() + " " + oi.driveTheta.get());
             System.out.println("raw: x,y,theta: "+oi.joy2.getX() + " "+oi.joy2.getY() + " "+oi.joy1.getX());
         }
-//        drive.driveRel(oi.drivex.get(), oi.drivey.get(), oi.driveTheta.get());
+        drive.driveRel(oi.drivex.get(), oi.drivey.get(), oi.driveTheta.get());
     }
 
     protected boolean isFinished() {

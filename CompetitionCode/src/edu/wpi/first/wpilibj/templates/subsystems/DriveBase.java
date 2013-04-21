@@ -24,22 +24,24 @@ public class DriveBase extends PIDSubsystem {
 
     public DriveBase() {
         super("DriveBase", Kp, Ki, Kd);
-    }
+        drive.setInvertedMotor(RobotDrive.MotorType.kFrontRight, true);
+        drive.setInvertedMotor(RobotDrive.MotorType.kRearRight, true);
+    }  
 
     protected void initDefaultCommand() {
         gyro.reset();
     }
 
     public void driveAbs(double x, double y, double theta, double gyroOffset) {
-        drive.mecanumDrive_Cartesian(x, y, theta, gyro.getAngle() + gyroOffset);
+        drive.mecanumDrive_Cartesian(x, -y, theta, gyro.getAngle() + gyroOffset);
     }
 
     public void driveRel(double x, double y, double theta) {
-        drive.mecanumDrive_Cartesian(x, y, theta, 0);
+        drive.mecanumDrive_Cartesian(x, -y, theta, 0);
     }
 
     public void driveTarget(double x, double y) {
-        drive.mecanumDrive_Cartesian(x, y, lastPIDoutput, 0);
+        drive.mecanumDrive_Cartesian(x, -y, lastPIDoutput, 0);
     }
 
     protected double returnPIDInput() {
