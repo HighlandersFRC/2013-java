@@ -6,9 +6,10 @@ import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.templates.commands.ArticulateDown;
 import edu.wpi.first.wpilibj.templates.commands.ArticulateUp;
 import edu.wpi.first.wpilibj.templates.commands.ClimbDownCommand;
+import edu.wpi.first.wpilibj.templates.commands.ClimbHookControl;
 import edu.wpi.first.wpilibj.templates.commands.ClimbUpCommand;
 import edu.wpi.first.wpilibj.templates.commands.FireCycle;
-import edu.wpi.first.wpilibj.templates.commands.IndexFrisbee;
+import edu.wpi.first.wpilibj.templates.commands.IndexManualFwd;
 import edu.wpi.first.wpilibj.templates.commands.InjectorManualBack;
 import edu.wpi.first.wpilibj.templates.commands.InjectorManualFwd;
 import edu.wpi.first.wpilibj.templates.commands.PIDArticulate;
@@ -78,10 +79,13 @@ public class OI {
     public Button injectorFwdButton = new JoystickButton(joy4, 7);
     public Button injectorBackButton = new JoystickButton(joy4, 8);
     public Button index = new JoystickButton (joy4, 9);
+    public Button startClimbControlButton = new JoystickButton(joy3, 2);
     public JoystickAxis drivex = new JoystickAxis(joy2, Joystick.AxisType.kX);
     public JoystickAxis drivey = new JoystickAxis(joy2, Joystick.AxisType.kY);
     public JoystickAxis driveTheta = new JoystickAxis(joy1, Joystick.AxisType.kX);
     public JoystickAxis shoulderControl = new JoystickAxis(joy4, Joystick.AxisType.kY);
+    public JoystickAxis beltControl = new JoystickAxis(joy3, Joystick.AxisType.kY);
+    
     {
         climbUpButton.whenPressed(new ClimbUpCommand());
         climbDownButton.whenPressed(new ClimbDownCommand());
@@ -97,7 +101,7 @@ public class OI {
         pidArticulateButton.whenPressed(new PIDArticulate());
         injectorFwdButton.whenPressed(new InjectorManualFwd());
         injectorBackButton.whenPressed(new InjectorManualBack());
-        index.whenPressed(new IndexFrisbee());
-
+        index.whenPressed(new IndexManualFwd());
+        startClimbControlButton.whenPressed(new ClimbHookControl());
     }
 }
