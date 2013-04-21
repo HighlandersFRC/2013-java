@@ -20,7 +20,7 @@ public class RunInjectorBack extends CommandBase {
 
     // Called just before this Command runs the first time
     protected void initialize() {
-        shooterInjector.setPwr(-SmartDashboard.getNumber("Injector Return Power", -0.25)/100);
+        shooterInjector.setPwr(-SmartDashboard.getNumber("Injector Return Power", -0.5)/100);
     }
 
     // Called repeatedly when this Command is scheduled to run
