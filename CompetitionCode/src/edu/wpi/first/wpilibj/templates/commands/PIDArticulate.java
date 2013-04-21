@@ -4,25 +4,22 @@
  */
 package edu.wpi.first.wpilibj.templates.commands;
 
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 /**
  *
- * @author alex
+ * @author Robotics
  */
-public class RunInjectorForward extends CommandBase {
-    private double endTime = 0;
-    public RunInjectorForward() {
+public class PIDArticulate extends CommandBase {
+    
+    public PIDArticulate() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
-        requires(shooterInjector);
+        requires(shooterArticulator);
     }
 
     // Called just before this Command runs the first time
     protected void initialize() {
-        endTime = Timer.getFPGATimestamp() + SmartDashboard.getNumber("Injection Time", 0.2);
-        shooterInjector.setPwr(-1);
+        shooterArticulator.enable();
+        shooterArticulator.setSetpoint(15);
     }
 
     // Called repeatedly when this Command is scheduled to run
@@ -31,12 +28,11 @@ public class RunInjectorForward extends CommandBase {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return Timer.getFPGATimestamp() > endTime;
+        return false;
     }
 
     // Called once after isFinished returns true
     protected void end() {
-        shooterInjector.setPwr(0.0);
     }
 
     // Called when another command which requires one or more of the same

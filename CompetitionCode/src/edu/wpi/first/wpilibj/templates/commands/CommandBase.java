@@ -38,6 +38,7 @@ public abstract class CommandBase extends Command {
         oi = new OI();
 
         // Show what command your subsystem is running on the SmartDashboard
+        SmartDashboard.putData("Articulator", shooterArticulator);
     }
 
     public CommandBase(String name) {

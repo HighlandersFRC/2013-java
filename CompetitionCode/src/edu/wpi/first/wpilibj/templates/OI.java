@@ -8,6 +8,9 @@ import edu.wpi.first.wpilibj.templates.commands.ArticulateUp;
 import edu.wpi.first.wpilibj.templates.commands.ClimbDownCommand;
 import edu.wpi.first.wpilibj.templates.commands.ClimbUpCommand;
 import edu.wpi.first.wpilibj.templates.commands.FireCycle;
+import edu.wpi.first.wpilibj.templates.commands.InjectorManualBack;
+import edu.wpi.first.wpilibj.templates.commands.InjectorManualFwd;
+import edu.wpi.first.wpilibj.templates.commands.PIDArticulate;
 import edu.wpi.first.wpilibj.templates.commands.ReleaseArm;
 import edu.wpi.first.wpilibj.templates.commands.StartLaunchMotor;
 import edu.wpi.first.wpilibj.templates.commands.StopLaunchMotor;
@@ -70,6 +73,9 @@ public class OI {
     };
     public Button fireButton1 = new JoystickButton(joy2, 1);
     public Button fireButton2 = new JoystickButton(joy4, 1);
+    public Button pidArticulateButton = new JoystickButton(joy4, 3);
+    public Button injectorFwdButton = new JoystickButton(joy4, 7);
+    public Button injectorBackButton = new JoystickButton(joy4, 8);
     public JoystickAxis drivex = new JoystickAxis(joy2, Joystick.AxisType.kX);
     public JoystickAxis drivey = new JoystickAxis(joy2, Joystick.AxisType.kY);
     public JoystickAxis driveTheta = new JoystickAxis(joy1, Joystick.AxisType.kX);
@@ -87,5 +93,8 @@ public class OI {
         articulateDownButton1.whenPressed(new ArticulateDown());
         articulateUpButton2.whenPressed(new ArticulateUp());
         articulateDownButton2.whenPressed(new ArticulateDown());
+        pidArticulateButton.whenPressed(new PIDArticulate());
+        injectorFwdButton.whenPressed(new InjectorManualFwd());
+        injectorBackButton.whenPressed(new InjectorManualBack());
     }
 }

@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj.Joystick;
  */
 public class TeleopDriveCommand extends CommandBase {
 
-    int n = 0;
 
     public TeleopDriveCommand() {
         requires(drive);
@@ -22,10 +21,6 @@ public class TeleopDriveCommand extends CommandBase {
     }
 
     protected void execute() {
-        if (++n % 10 == 0) {
-            System.out.println("joystickAxis: x,y,theta: " + oi.drivex.get() + " " + oi.drivey.get() + " " + oi.driveTheta.get());
-            System.out.println("raw: x,y,theta: "+oi.joy2.getX() + " "+oi.joy2.getY() + " "+oi.joy1.getX());
-        }
         drive.driveRel(oi.drivex.get(), oi.drivey.get(), oi.driveTheta.get());
     }
 
