@@ -17,8 +17,8 @@ import edu.wpi.first.wpilibj.templates.RobotMap;
  */
 public class ShooterArticulator extends PIDSubsystem {
 
-    private static final double Kp = 0.0;
-    private static final double Ki = 0.0;
+    private static final double Kp = 0.1;
+    private static final double Ki = 0.03;
     private static final double Kd = 0.0;
     private static final double bottomAngle = 0.0;
     private static final double topAngle = 45.0;
@@ -38,6 +38,8 @@ public class ShooterArticulator extends PIDSubsystem {
         this.setInputRange(bottomAngle, topAngle);
         SmartDashboard.putData("ElevationTargeting PID", this.getPIDController());
         SmartDashboard.putData("ArticulatorEncoder", quad);
+//        setSetpoint(15);
+//        enable();
 
         // Use these to get going:
         // setSetpoint() -  Sets where the PID controller should move the system
@@ -62,15 +64,13 @@ public class ShooterArticulator extends PIDSubsystem {
         // e.g. a sensor, like a potentiometer:
         // yourPot.getAverageVoltage() / kYourMaxVoltage;
         encoderCalibration();
-        if (topLimit.get()) {
-            return topAngle;
-        }
         return quad.getDistance();
     }
     
     protected void usePIDOutput(double output) {
         // Use output to drive your system, like a motor
         // e.g. yourMotor.set(output);
+        System.out.println("output: "+output);
         articulate(output);
     }
     public void articulate(double pwr) {
@@ -85,5 +85,8 @@ public class ShooterArticulator extends PIDSubsystem {
         } else {
             articulator.set(pwr);
         }
+    }
+    public boolean getTopLimit() {
+        return topLimit.get();
     }
 }

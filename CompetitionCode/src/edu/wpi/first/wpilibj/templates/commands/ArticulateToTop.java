@@ -6,11 +6,11 @@ package edu.wpi.first.wpilibj.templates.commands;
 
 /**
  *
- * @author Robotics
+ * @author alex
  */
-public class PIDArticulate extends CommandBase {
+public class ArticulateToTop extends CommandBase {
     
-    public PIDArticulate() {
+    public ArticulateToTop() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
         requires(shooterArticulator);
@@ -18,8 +18,7 @@ public class PIDArticulate extends CommandBase {
 
     // Called just before this Command runs the first time
     protected void initialize() {
-        shooterArticulator.enable();
-        shooterArticulator.setSetpoint(15);
+        shooterArticulator.articulate(1);
     }
 
     // Called repeatedly when this Command is scheduled to run
@@ -28,17 +27,16 @@ public class PIDArticulate extends CommandBase {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return false;
+        return shooterArticulator.getTopLimit();
     }
 
     // Called once after isFinished returns true
     protected void end() {
-        shooterArticulator.disable();
+        shooterArticulator.articulate(0);
     }
 
     // Called when another command which requires one or more of the same
     // subsystems is scheduled to run
     protected void interrupted() {
-        shooterArticulator.disable();
     }
 }

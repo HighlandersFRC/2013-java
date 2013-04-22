@@ -5,6 +5,7 @@
 package edu.wpi.first.wpilibj.templates.commands;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.command.Command;
 
 /**
  *
@@ -14,6 +15,8 @@ public class Autonomous extends CommandBase {
 
     double autostarttime;
     int autostate = 0;
+    Command articulatorReset = new ArticulateToTop();
+    Command articulatorTarget = new FireArticulate();
 
     public Autonomous() {
         // Use requires() here to declare subsystem dependencies
@@ -24,11 +27,15 @@ public class Autonomous extends CommandBase {
     protected void initialize() {
         new RunInjectorBack().start();
         new StartLaunchMotor().start();
+        articulatorReset.start();
         autostarttime = Timer.getFPGATimestamp();
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
+        if (!articulatorReset.isRunning() && !articulatorTarget.isRunning()) {
+            articulatorTarget.start();
+        }
         if (Timer.getFPGATimestamp() - autostarttime > 5 && autostate == 0) {
             autostate = 1;
             new FireCycle().start();

@@ -19,7 +19,7 @@ public class ClimberBelt extends Subsystem {
     }
 
     public void climb(double pwr) {
-        belt.set(pwr);
+        belt.set(-pwr);
     }
 }
 
