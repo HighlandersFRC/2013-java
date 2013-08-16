@@ -29,6 +29,7 @@ public class RobotTemplate extends IterativeRobot {
 
     Command autonomousCommand;
     Command teleopCommand;
+    Command shoulderCommand;
     SendableChooser autonomousSelect;
 
     /**
@@ -42,6 +43,7 @@ public class RobotTemplate extends IterativeRobot {
         teleopCommand = new TeleopDriveCommand();
         autonomousSelect.addDefault("none", null);
         autonomousSelect.addObject("testAuto", autonomousCommand);
+        shoulderCommand = new ReleaseArm();
 
         // Initialize all subsystems
         CommandBase.init();
@@ -69,6 +71,7 @@ public class RobotTemplate extends IterativeRobot {
         // this line or comment it out.
         autonomousCommand.cancel();
         teleopCommand.start();
+        shoulderCommand.start();
     }
 
     /**
@@ -80,7 +83,7 @@ public class RobotTemplate extends IterativeRobot {
     public void disabledInit() {
         autonomousCommand.cancel();
         teleopCommand.cancel();
-        OI.shoulderCommand.cancel();
+        shoulderCommand.cancel();
 //        new HoldClimb().start();
     }
     

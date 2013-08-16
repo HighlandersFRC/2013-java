@@ -14,7 +14,7 @@ public class RobotMap {
     public static final int driveRearRight = 3;
     public static final int shooterLaunch = 5;
     public static final int shooterInjector = 6;
-    public static final int shooterIndexer = 7; // PWM port for the servo that indexes frisbees
+    public static final int shooterIndexer = 7; // PWM port for the servo that indexes fridsbees
     public static final int shooterArticulator = 8;
     public static final int climberBelt = 10;
     public static final int climberShoulder = 9;

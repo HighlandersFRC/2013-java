@@ -70,7 +70,7 @@ public class ShooterArticulator extends PIDSubsystem {
     protected void usePIDOutput(double output) {
         // Use output to drive your system, like a motor
         // e.g. yourMotor.set(output);
-        System.out.println("output: "+output);
+//        System.out.println("output: "+output);
         articulate(output);
     }
     public void articulate(double pwr) {

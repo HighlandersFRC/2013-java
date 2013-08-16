@@ -4,6 +4,8 @@
  */
 package edu.wpi.first.wpilibj.templates.commands;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 /**
  *
  * @author alex
@@ -22,7 +24,7 @@ public class ArticulateDown extends CommandBase {
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-        shooterArticulator.articulate(-1);
+        shooterArticulator.articulate(-SmartDashboard.getNumber("Articulator Power", 1)/100);
     }
 
     // Make this return true when this Command no longer needs to run execute()
