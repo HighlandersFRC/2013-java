@@ -82,7 +82,7 @@ public class OI {
     public Button pidArticulateButton = new JoystickButton(joy4, 3);
     public Button injectorFwdButton = new JoystickButton(joy4, 6); //change back to 7 when joystick fixed
     public Button injectorBackButton = new JoystickButton(joy4, 4); // change back to 8 when joystick fixed
-    public Button index = new JoystickButton (joy4, 9);
+    public Button index = new JoystickButton(joy4, 9);
     public Button startClimbControlButton = new JoystickButton(joy3, 5);
     public Button loadPosButton = new JoystickButton(joy3, 2);
     public Button firePosButton = new JoystickButton(joy3, 3);
