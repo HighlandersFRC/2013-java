@@ -65,6 +65,9 @@ public class DaisyCVWidget extends WPICameraExtension {
     private WPIContour[] contours;
     private ArrayList<WPIPolygon> polygons;
     private IplConvKernel morphKernel;
+    private IplImage lightOn;
+    private IplImage lightOff;
+    private IplImage lightDiff;
     private IplImage bin;
     private IplImage hsv;
     private IplImage hue;
@@ -136,8 +139,14 @@ public class DaisyCVWidget extends WPICameraExtension {
 
     @Override
     public WPIImage processImage(WPIColorImage rawImage) {
+        long startTime = System.currentTimeMillis();
         double heading = 0.0;
         double armAngle = 0.0;
+        if (Robot.getTable().getBoolean("lightOn")) {
+            lightOn = DaisyExtensions.getIplImage(rawImage);
+        } else {
+            lightOff = DaisyExtensions.getIplImage(rawImage);
+        }
 
         // Get the current heading of the robot first
         if (!m_debugMode) {
@@ -151,6 +160,7 @@ public class DaisyCVWidget extends WPICameraExtension {
 
         if (size == null || size.width() != rawImage.getWidth() || size.height() != rawImage.getHeight()) {
             size = opencv_core.cvSize(rawImage.getWidth(), rawImage.getHeight());
+            lightDiff = IplImage.create(size, 8, 3);
             bin = IplImage.create(size, 8, 1);
             hsv = IplImage.create(size, 8, 3);
             hue = IplImage.create(size, 8, 1);
@@ -161,11 +171,13 @@ public class DaisyCVWidget extends WPICameraExtension {
             linePt2 = new WPIPoint(size.width() / 2 + horizontalOffsetPixels, 0);
         }
         // Get the raw IplImages for OpenCV
+        opencv_core.cvSub(lightOn, lightOff, lightDiff, null);
         IplImage input = DaisyExtensions.getIplImage(rawImage);
 
         // Convert to HSV color space
         opencv_imgproc.cvCvtColor(input, hsv, opencv_imgproc.CV_BGR2HSV);
         opencv_core.cvSplit(hsv, hue, sat, val, null);
+        long timeSplitFinished = System.currentTimeMillis();
 
         // Threshold each component separately
         // Hue
@@ -179,12 +191,13 @@ public class DaisyCVWidget extends WPICameraExtension {
 
         // Value
         opencv_imgproc.cvThreshold(val, val, Robot.getTable().getInt("Val"), 255, opencv_imgproc.CV_THRESH_BINARY);
-
+        long timeThresholdFinished = System.currentTimeMillis();
         // Combine the results to obtain our binary image which should for the most
         // part only contain pixels that we care about
         opencv_core.cvAnd(hue, bin, bin, null);
         opencv_core.cvAnd(bin, sat, bin, null);
         opencv_core.cvAnd(bin, val, bin, null);
+        long timeAndFinished = System.currentTimeMillis();
 
         // Uncomment the next two lines to see the raw binary image
 //        CanvasFrame result = new CanvasFrame("binary");
@@ -199,6 +212,7 @@ public class DaisyCVWidget extends WPICameraExtension {
         if (Robot.getTable().getBoolean("Show Morph")) {
             rawBinWpi = DaisyExtensions.makeWPIBinaryImage(bin);
         }
+        long timeMorphFinished = System.currentTimeMillis();
 
         // Uncomment the next two lines to see the image post-morphology
 //        CanvasFrame result2 = new CanvasFrame("morph");
@@ -207,6 +221,7 @@ public class DaisyCVWidget extends WPICameraExtension {
         // Find contours
         WPIBinaryImage binWpi = DaisyExtensions.makeWPIBinaryImage(bin);
         contours = DaisyExtensions.findConvexContours(binWpi);
+        long timeContoursFinished = System.currentTimeMillis();
 
         polygons = new ArrayList<WPIPolygon>();
         for (WPIContour c : contours) {
@@ -215,6 +230,7 @@ public class DaisyCVWidget extends WPICameraExtension {
                 polygons.add(c.approxPolygon(20));
             }
         }
+        long timePolysFinished = System.currentTimeMillis();
 
         WPIPolygon square = null;
         int highest = Integer.MAX_VALUE;
@@ -307,8 +323,19 @@ public class DaisyCVWidget extends WPICameraExtension {
 
         if (Robot.getTable().getBoolean("Show Binary") || Robot.getTable().getBoolean("Show Morph")) {
             return rawBinWpi;
+        } else {
+            //DaisyExtensions.getIplImage(rawBinWpi).release();
         }
-        return rawImage; 
+        long timeFinished = System.currentTimeMillis();
+        Robot.getTable().putNumber("SplitTime", timeSplitFinished - startTime);
+        Robot.getTable().putNumber("ThresholdTime", timeThresholdFinished - timeSplitFinished);
+        Robot.getTable().putNumber("AndTime", timeAndFinished - timeThresholdFinished);
+        Robot.getTable().putNumber("MorphTime", timeMorphFinished - timeAndFinished);
+        Robot.getTable().putNumber("ContoursTime", timeContoursFinished - timeMorphFinished);
+        Robot.getTable().putNumber("PolygonsTime", timePolysFinished - timeContoursFinished);
+        Robot.getTable().putNumber("FinishTime", timeFinished - timePolysFinished);
+        return DaisyExtensions.makeWPIColorImage(lightDiff);
+        //return rawImage; 
     }
 
     private double boundAngle0to360Degrees(double angle) {
